@@ -1,0 +1,64 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="cn.scihi.mbgl.mapper.PropMapper">
+    <select id="select" parameterType="HashMap" resultType="Map">
+        select t.id, t.category, t.key_, t.value1, t.value2, t.value3
+        from s_prop t
+        <where>
+            <if test="null != id and '' != id">and t.id = #{id}</if>
+            <if test="null != category and '' != category">and t.category = #{category}</if>
+            <if test="null != key_ and '' != key_">and t.key_ = #{key_}</if>
+            <if test="null != value1 and '' != value1">and t.value1 = #{value1}</if>
+            <if test="null != value2 and '' != value2">and t.value2 = #{value2}</if>
+            <if test="null != value3 and '' != value3">and t.value3 = #{value3}</if>
+        </where>
+        <choose>
+            <when test="null != orderStr_ and '' != orderStr_">${orderStr_}</when>
+            <otherwise>order by id</otherwise>
+        </choose>
+    </select>
+    <select id="selectForBean" parameterType="HashMap" resultType="cn.scihi.comm.util.Prop">
+        select t.id, t.category, t.key_, t.value1, t.value2, t.value3
+        from s_prop t
+        <where>
+            <if test="null != id and '' != id">and t.id = #{id}</if>
+            <if test="null != category and '' != category">and t.category = #{category}</if>
+            <if test="null != key_ and '' != key_">and t.key_ = #{key_}</if>
+            <if test="null != value1 and '' != value1">and t.value1 = #{value1}</if>
+            <if test="null != value2 and '' != value2">and t.value2 = #{value2}</if>
+            <if test="null != value3 and '' != value3">and t.value3 = #{value3}</if>
+        </where>
+        <choose>
+            <when test="null != orderStr_ and '' != orderStr_">${orderStr_}</when>
+            <otherwise>order by id</otherwise>
+        </choose>
+    </select>
+    <delete id="delete" parameterType="HashMap">
+        delete from s_prop where
+        <choose>
+            <when test="null != id and '' != id">id=#{id}</when>
+            <when test="null != ids and '' != ids">
+                id in
+                <foreach collection="ids" item="idItem" open="(" close=")" separator=",">
+                    #{idItem}
+                </foreach>
+            </when>
+            <when test="null != category and '' != category">category = #{category} and key_=#{key_}</when>
+            <otherwise>1=2</otherwise>
+        </choose>
+    </delete>
+    <insert id="insert" parameterType="HashMap" useGeneratedKeys="true" keyProperty="id">
+        insert into s_prop (  id, category, key_, value1, value2, value3 )  values (  #{id},  #{category},  #{key_},  #{value1},  #{value2},  #{value3}  )
+    </insert>
+    <update id="update" parameterType="HashMap">
+        update s_prop
+        <set>
+            <if test="null != category">category = #{category},</if>
+            <if test="null != key_">key_ = #{key_},</if>
+            <if test="null != value1">value1 = #{value1},</if>
+            <if test="null != value2">value2 = #{value2},</if>
+            <if test="null != value3">value3 = #{value3},</if>
+        </set>
+        where id = #{id}
+    </update>
+</mapper>

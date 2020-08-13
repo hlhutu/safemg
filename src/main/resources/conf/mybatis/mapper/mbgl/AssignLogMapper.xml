@@ -1,0 +1,73 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="cn.scihi.mbgl.mapper.AssignLogMapper">
+	<select id="select" parameterType="HashMap" resultType="Map">
+		select 
+		t.id,t.model_id,t.username,t.created 
+		from s_mb_assign_log t 
+		<where>
+			<if test="null != id and '' != id">
+				and t.id = #{id} 
+			</if>
+			<if test="null != model_id and '' != model_id">
+				and t.model_id = #{model_id} 
+			</if>
+			<if test="null != username and '' != username">
+				and t.username = #{username} 
+			</if>
+			<if test="null != created and '' != created">
+				and t.created = #{created} 
+			</if>
+			<if test="null != keywords and '' != keywords">
+			</if>
+		</where>
+		<choose>
+			<when test="null != orderStr_ and '' != orderStr_">
+				${orderStr_} 
+			</when>
+			<otherwise>
+				order by created desc 
+			</otherwise>
+		</choose>
+	</select>
+	<delete id="delete" parameterType="HashMap">
+		delete from s_mb_assign_log 
+		where id in 
+		<foreach collection="id.split(',')" open="(" separator="," close=")" item="item">
+			#{item} 
+		</foreach>
+	</delete>
+	<insert id="insert" parameterType="HashMap" useGeneratedKeys="true" keyProperty="id">
+		insert into s_mb_assign_log 
+		(id,model_id,username,created)
+		values
+		(#{id},#{model_id},#{username},now())
+	</insert>
+	<update id="update" parameterType="HashMap">
+		update s_mb_assign_log 
+		<set>
+			<if test="null != model_id">
+				model_id = #{model_id},
+			</if>
+			<if test="null != username">
+				username = #{username},
+			</if>
+			<if test="null != created">
+				created = #{created},
+			</if>
+		</set>
+		where id = #{id} 
+	</update>
+
+	<select id="queryAssignLogByModelId" resultType="java.util.HashMap">
+		select
+		log.model_id, log.username, log.created
+		,model.mbmc
+		,suser.user_name username, suser.user_alias, suser.mobile_phone
+		from s_mb_assign_log log
+		left join s_mbgl model on model.id=log.model_id
+		left join sys_user suser on suser.USER_NAME=log.username
+		where log.model_id=#{0}
+		order by log.created desc
+	</select>
+</mapper>

@@ -1,0 +1,158 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="cn.scihi.xjgl.mapper.XjmbglInfoMapper">
+	<select id="select" parameterType="HashMap" resultType="Map">
+		select 
+		t.id,t.sys_id,t.xj_id,t.xh,t.rwx,t.rwdd,t.rwjd,t.rwwd,t.remark,t.sort_no,t.row_state,t.row_default,t.row_hist,t.creator,t.created,t.modifier,t.modified,t.ext1,t.ext2,t.ext3,t.row_version 
+		,concat(t.rwjd,",",t.rwwd) as "lnglat"
+		from s_xjmbgl_info t 
+		<where>
+			<if test="null != id and '' != id">
+				and t.id = #{id} 
+			</if>
+			<if test="null != sys_id and '' != sys_id">
+				and t.sys_id = #{sys_id} 
+			</if>
+			<if test="null != xj_id and '' != xj_id">
+				and t.xj_id = #{xj_id} 
+			</if>
+			<if test="null != xh and '' != xh">
+				and t.xh = #{xh} 
+			</if>
+			<if test="null != rwx and '' != rwx">
+				and t.rwx = #{rwx} 
+			</if>
+			<if test="null != rwdd and '' != rwdd">
+				and t.rwdd = #{rwdd} 
+			</if>
+			<if test="null != rwjd and '' != rwjd">
+				and t.rwjd = #{rwjd} 
+			</if>
+			<if test="null != rwwd and '' != rwwd">
+				and t.rwwd = #{rwwd} 
+			</if>
+			<if test="null != remark and '' != remark">
+				and t.remark = #{remark} 
+			</if>
+			<if test="null != sort_no and '' != sort_no">
+				and t.sort_no = #{sort_no} 
+			</if>
+			<if test="null != row_state and '' != row_state">
+				and t.row_state = #{row_state} 
+			</if>
+			<if test="null != row_default and '' != row_default">
+				and t.row_default = #{row_default} 
+			</if>
+			<if test="null != row_hist and '' != row_hist">
+				and t.row_hist = #{row_hist} 
+			</if>
+			<if test="null != creator and '' != creator">
+				and t.creator = #{creator} 
+			</if>
+			<if test="null != created and '' != created">
+				and t.created = #{created} 
+			</if>
+			<if test="null != modifier and '' != modifier">
+				and t.modifier = #{modifier} 
+			</if>
+			<if test="null != modified and '' != modified">
+				and t.modified = #{modified} 
+			</if>
+			<if test="null != ext1 and '' != ext1">
+				and t.ext1 = #{ext1} 
+			</if>
+			<if test="null != ext2 and '' != ext2">
+				and t.ext2 = #{ext2} 
+			</if>
+			<if test="null != ext3 and '' != ext3">
+				and t.ext3 = #{ext3} 
+			</if>
+			<if test="null != row_version and '' != row_version">
+				and t.row_version = #{row_version} 
+			</if>
+			<if test="null != keywords and '' != keywords">
+			</if>
+		</where>
+		<choose>
+			<when test="null != orderStr_ and '' != orderStr_">
+				${orderStr_} 
+			</when>
+			<otherwise>
+				order by t.xh asc
+			</otherwise>
+		</choose>
+	</select>
+	<delete id="delete" parameterType="HashMap">
+		delete from s_xjmbgl_info 
+		where xj_id = #{xj_id}
+	</delete>
+	<insert id="insert" parameterType="HashMap" useGeneratedKeys="true" keyProperty="id">
+		insert into s_xjmbgl_info 
+		(id,sys_id,xj_id,xh,rwx,rwdd,rwjd,rwwd,remark,sort_no,row_state,row_default,row_hist,creator,created,modifier,modified,ext1,ext2,ext3,row_version)
+		values
+		(#{id},#{sys_id},#{xj_id},#{xh},#{rwx},#{rwdd},#{rwjd},#{rwwd},#{remark},#{sort_no},#{row_state},#{row_default},#{row_hist},#{creator},#{created},#{modifier},#{modified},#{ext1},#{ext2},#{ext3},#{row_version})
+	</insert>
+	<update id="update" parameterType="HashMap">
+		update s_xjmbgl_info 
+		<set>
+			<if test="null != xj_id">
+				xj_id = #{xj_id},
+			</if>
+			<if test="null != xh">
+				xh = #{xh},
+			</if>
+			<if test="null != rwx">
+				rwx = #{rwx},
+			</if>
+			<if test="null != rwdd">
+				rwdd = #{rwdd},
+			</if>
+			<if test="null != rwjd">
+				rwjd = #{rwjd},
+			</if>
+			<if test="null != rwwd">
+				rwwd = #{rwwd},
+			</if>
+			<if test="null != remark">
+				remark = #{remark},
+			</if>
+			<if test="null != sort_no">
+				sort_no = #{sort_no},
+			</if>
+			<if test="null != row_state">
+				row_state = #{row_state},
+			</if>
+			<if test="null != row_default">
+				row_default = #{row_default},
+			</if>
+			<if test="null != row_hist">
+				row_hist = #{row_hist},
+			</if>
+			<if test="null != creator">
+				creator = #{creator},
+			</if>
+			<if test="null != created">
+				created = #{created},
+			</if>
+			<if test="null != modifier">
+				modifier = #{modifier},
+			</if>
+			<if test="null != modified">
+				modified = #{modified},
+			</if>
+			<if test="null != ext1">
+				ext1 = #{ext1},
+			</if>
+			<if test="null != ext2">
+				ext2 = #{ext2},
+			</if>
+			<if test="null != ext3">
+				ext3 = #{ext3},
+			</if>
+			<if test="null != row_version">
+				row_version = #{row_version},
+			</if>
+		</set>
+		where id = #{id} 
+	</update>
+</mapper>

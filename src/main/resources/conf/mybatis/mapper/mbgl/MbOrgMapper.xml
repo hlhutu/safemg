@@ -1,0 +1,157 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="cn.scihi.mbgl.mapper.MbOrgMapper">
+	<sql id="Base_Column_List">
+		t.id
+		,t.sys_id 
+		,t.status
+		,t.remark
+		,t.creator
+		,t.created
+		,t.modifier
+		,t.modified
+		,t.ext1
+		,t.ext2
+		,t.ext3
+		,t.row_version
+	</sql>
+	<select id="select" parameterType="HashMap" resultType="MyMap">
+		select
+		<include refid="Base_Column_List" />
+		,t.mbgl_id 
+		,t.org_id 
+		
+		,t2.xh   as "xh_mb" 
+		,t2.mbmc as "mbmc_mb" 
+		,(select  DICT_NAME from sys_dict WHERE PARENT_ID='qdlx' AND  DICT_VALUE = t2.qdlx) as "qdlx_mb" 
+		,t2.status   as "status_mb" 
+		,t2.modified as "modified_mb" 
+
+		,t1.user_alias as "modifierDesc_mb" 
+		,(select count(mi.id) from s_mbgl_info  mi where mi.glid= t.mbgl_id ) as "rwsl"
+		from s_mb_org t
+		left join s_mbgl t2 on  t2.id = t.mbgl_id 
+		left join sys_user t1 on t2.modifier = t1.user_name
+		<where>
+			<if test="null != id and '' != id">
+				t.id = #{id}
+			</if>
+			<if test="null != sys_id and '' != sys_id">
+				and t.sys_id = #{sys_id}
+			</if> 
+			<if test="null != status and '' != status">
+				and t.status = #{status}
+			</if>
+			<if test="null != org_id and '' != org_id">
+				and t.org_id = #{org_id}
+			</if>
+			<if test="null != keywords and '' != keywords">
+				and ( 
+				  t1.user_alias like '${keywords}%'
+				or t2.xh like '${keywords}%' 
+				or t2.mbmc like '${keywords}%' 
+				or t2.qdlx like '${keywords}%' 
+				)
+			</if>
+		</where>
+		<if test="null != orderStr_ and '' != orderStr_">
+			${orderStr_}
+		</if>
+		<!-- order by t.org_id+0, t.modified desc -->
+	</select>
+	
+	
+	<select id="selectCanAddMb" parameterType="HashMap" resultType="MyMap">
+		select 
+		id as "id_mb",
+		xh as   "xh_mb" ,
+		mbmc  as "mbmc_mb" ,
+		(select  DICT_NAME from sys_dict WHERE PARENT_ID='qdlx' AND  DICT_VALUE = t.qdlx) as "qdlx_mb", 
+		created 
+		
+		from  s_mbgl t 
+		where  1=1
+		<if test="null != org_id and '' != org_id">
+			and	id not in (select mbgl_id   from  s_mb_org where org_id = #{org_id}) 
+		</if>
+		<if test="null != keywords and '' != keywords">
+			and ( 
+			   t.xh like '${keywords}%' 
+			or t.mbmc like '${keywords}%' 
+			or t.qdlx like '${keywords}%' 
+			)
+		</if> 
+	</select>
+	 
+	
+	<delete id="delete" parameterType="HashMap">
+		delete from s_mb_org 
+		where id in
+		<foreach collection="id.split(',')" open="(" separator="," close=")" item="item" index="index">  
+			#{item}
+		</foreach>; 
+	</delete>
+	
+	<insert id="insert" parameterType="HashMap" useGeneratedKeys="true" keyProperty="id">
+		insert into s_mb_org (
+		id
+		,sys_id
+		
+		,mbgl_id 
+		,org_id 
+		
+		,pid
+		,pdid
+		,status
+		,remark
+		,creator
+		,created
+		,modifier
+		,modified
+		,ext1
+		,ext2
+		,ext3
+		,row_version
+		)
+		values
+		(
+		#{id}
+		,#{sys_id}
+		
+		,#{mbgl_id} 
+		,#{org_id} 
+		
+		,#{pid}
+		,#{pdid}
+		,#{status}
+		,#{remark}
+		,#{creator}
+		,#{created} 
+		,#{modifier}
+		,#{modified}
+		,#{ext1}
+		,#{ext2}
+		,#{ext3}
+		,#{row_version}
+		)
+	</insert>
+	<update id="update" parameterType="HashMap">
+		update s_mb_org
+		set
+		mbgl_id = #{mbgl_id} 
+		,org_id = #{org_id} 
+		
+		,pid = #{pid}
+		,pdid = #{pdid}
+		,status = #{status}
+		,remark = #{remark}
+		,modifier = #{modifier}
+		,modified = #{modified}
+		,ext1 = #{ext1}
+		,ext2 = #{ext2}
+		,ext3 = #{ext3}
+		,row_version = #{row_version}
+		where 
+		id = #{id}
+	</update>
+</mapper>

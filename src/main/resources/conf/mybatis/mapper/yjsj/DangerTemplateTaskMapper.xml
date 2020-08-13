@@ -1,0 +1,143 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="cn.scihi.yjsj.mapper.DangerTemplateTaskMapper">
+	<select id="select" parameterType="HashMap" resultType="Map">
+		select
+		<include refid="BaseMapper.Base_Column_List_Select" />
+		,t.law_obj as "law_obj"
+		,t.law_user as "law_user"
+		,t.law_company as "law_company"
+		,t.est_start_time as "est_start_time"
+		,t.start_time as "start_time"
+		,t.end_time as "end_time"
+		,t.template_id as "template_id"
+		,(case when t.status=0 then 1 else t.status end) as "statusOrder"
+		
+		,t1.scale_name as "scale_name"
+		
+		,tuser.user_alias as "lawUserAlias"
+		
+		,orgObj.ORG_NAME as "org_name"
+		
+		,t.status as "status"
+		from s_danger_template_task t
+		left join s_danger_template_scale t1 on t1.id = t.template_id
+		left join sys_org orgObj on orgObj.id = t.law_obj
+		left join sys_user tuser on tuser.user_name = t.law_user
+		<where>
+			<if test="null != id and '' != id">
+				and t.id = #{id}
+			</if>
+			<if test="null != notStatus and '' != notStatus">
+				and t.status != #{notStatus}
+			</if>
+			<if test="null != sys_id and '' != sys_id">
+				and t.sys_id = #{sys_id}
+			</if>
+			<if test="null != law_user and '' != law_user">
+				and t.law_user = #{law_user}
+			</if>
+			<if test="null != row_default and '' != row_default">
+				and t.row_default = #{row_default}
+			</if>
+			<if test="null != row_state and '' != row_state">
+				and t.row_state = #{row_state}
+			</if>
+			<if test="null != row_version and '' != row_version">
+				and t.row_version = #{row_version}
+			</if>
+			<if test="null != keywords and '' != keywords">
+				and (
+				t1.scale_name like '%${keywords}%' 
+				or tuser.user_alias like '%${keywords}%' 
+				or orgObj.ORG_NAME like '%${keywords}%' 
+				)
+			</if>
+		</where>
+		<choose>
+			<when test="null != orderStr_ and '' != orderStr_">
+				${orderStr_}
+			</when>
+			<otherwise>
+				order by statusOrder,t.created desc
+			</otherwise>
+		</choose>
+	</select>
+	
+	<delete id="delete" parameterType="HashMap">
+		delete from s_danger_template_task 
+		where id in 
+		<foreach collection="id.split(',')" open="(" separator="," close=")" item="item" index="index">
+			#{item}
+		</foreach>
+	</delete>
+	
+	<insert id="insert" parameterType="HashMap" useGeneratedKeys="true" keyProperty="id">
+		insert into s_danger_template_task (
+		<include refid="BaseMapper.Base_Column_List_Insert" />
+		,law_obj
+		,law_user
+		,law_company
+		<if test="null != est_start_time and '' != est_start_time">
+		,est_start_time
+		</if>
+		<if test="null != start_time and '' != start_time">
+		,start_time
+		</if>
+		,template_id
+		<if test="null != status">
+		,status
+		</if>
+		)
+		values
+		(
+		<include refid="BaseMapper.Base_Column_List_Insert_Values" />
+		,#{law_obj}
+		,#{law_user}
+		,#{law_company}
+		<if test="null != est_start_time and '' != est_start_time">
+		,#{est_start_time}
+		</if>
+		<if test="null != start_time and '' != start_time">
+		,#{start_time}
+		</if>
+		,#{template_id}
+		<if test="null != status">
+		,#{status}
+		</if>
+		)
+	</insert>
+	
+	<update id="update" parameterType="HashMap">
+		update s_danger_template_task
+		<set>
+			<include refid="BaseMapper.Base_Column_List_Update" />
+			<if test="null != law_user">
+				law_user = #{law_user}
+			</if>
+			<if test="null != law_obj">
+				,law_obj = #{law_obj}
+			</if>
+			<if test="null != law_company">
+				,law_company = #{law_company}
+			</if>
+			<if test="null != est_start_time">
+				,est_start_time = #{est_start_time}
+			</if>
+			<if test="null != start_time">
+				,start_time = #{start_time}
+			</if>
+			<if test="null != end_time">
+				,end_time = #{end_time}
+			</if>
+			<if test="null != template_id">
+				,template_id = #{template_id}
+			</if>
+			<if test="null != status">
+				,status = #{status}
+			</if>
+		</set>
+		where 
+		id = #{id}
+	</update>
+</mapper>

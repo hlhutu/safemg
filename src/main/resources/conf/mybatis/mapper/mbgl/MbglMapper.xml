@@ -1,0 +1,344 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="cn.scihi.mbgl.mapper.MbglMapper">
+	<sql id="Base_Column_List">
+		t.id
+		,t.sys_id
+		,t.status
+		,t.remark
+		,t.creator
+		,t.created
+		,t.modifier
+		,t.modified
+		,t.ext1
+		,t.ext2
+		,t.ext3
+		,t.row_version
+		,t.row_state
+		,t.row_default
+		,t.row_hist
+	</sql>
+	<select id="select" parameterType="HashMap" resultType="java.util.Map">
+		select
+		<include refid="Base_Column_List" />
+		,t.mbmc
+		,t.orgid
+		,t.roleid
+		,t.qdlx
+		,t.xh
+		,t.start_date
+		,t.end_date
+		,t.key_
+		,t.version
+		,t1.user_alias as "modifierDesc"
+		,t.dept_name
+		,t.duty_based
+		,t.duty_purpose
+		,t.duty_category
+		,t.duty_scope
+		,count(t2.id) as "rwsl"
+		from s_mbgl t
+		left join sys_user t1 on t.modifier = t1.user_name
+		left join s_mbgl_info t2 on t.id=t2.glid
+		and t2.status='1'
+		<where>
+			<choose>
+				<when test="null != ext1 and '' != ext1">
+					and t.ext1 = #{ext1}
+				</when>
+				<otherwise>
+					and t.ext1 is null
+				</otherwise>
+			</choose>
+
+			<if test="null != id and '' != id">
+				and t.id = #{id}
+			</if>
+			<if test="null != sys_id and '' != sys_id">
+				and t.sys_id = #{sys_id}
+			</if>
+			<if test="null != status and '' != status">
+				and t.status in
+				<foreach collection="status.split(',')" item="statusItem" open="(" close=")" separator=",">
+					#{statusItem}
+				</foreach>
+			</if>
+			<if test="taskStat=='daiban'">
+				and exists (
+					select 1 from s_task where mbid=t.id and status in ('1','3')
+				)
+			</if>
+			<if test="null != org_id and '' != org_id">
+				and t.orgid = #{org_id}
+			</if>
+			<if test="null != role_id and '' != role_id">
+				and t.roleid in
+				<foreach collection="role_id.split(',')" item="roleIdItem" separator="," open="(" close=")">
+					#{roleIdItem}
+				</foreach>
+			</if>
+			<if test="null != qdlx and '' != qdlx">
+				and t.qdlx = #{qdlx}
+			</if>
+			<if test="null != creator and '' != creator">
+				and t.creator = #{creator}
+			</if>
+			<if test="null != keywords and '' != keywords">
+				and (t.pid like '${keywords}%'
+				or t.mbmc like
+				'${keywords}%'
+				or t.qdlx like '${keywords}%'
+				or t1.user_alias like
+				'${keywords}%'
+				)
+			</if>
+		</where>
+		GROUP BY
+		t.id
+		<if test="null != orderStr_ and '' != orderStr_">
+			${orderStr_}
+		</if>
+		<!-- order by t.xh+0, t.modified desc -->
+	</select>
+
+	<select id="selectMyTimeModels" parameterType="HashMap" resultType="MyMap">
+		select
+		<include refid="Base_Column_List" />
+		,t.mbmc
+		,t.orgid
+		,t.roleid
+		,t.qdlx
+		,t.xh
+		,t.start_date
+		,t.end_date
+		,t.key_
+		,t.version
+		,t1.user_alias as "modifierDesc"
+		,count(t2.id) as "rwsl"
+		from s_mbgl t
+		left join s_mbgl_info t2 on t.id=t2.glid
+		left join sys_user t1 on t.modifier = t1.user_name
+		left join s_mb_assign_log log on log.model_id=t.id
+		<where>
+			t.status!='-1' and log.username=#{0}
+		</where>
+		group by t.id
+	</select>
+
+	<select id="selectMyTasks" parameterType="HashMap"
+		resultType="MyMap">
+		select
+		<include refid="Base_Column_List" />
+		,t.orgid
+		,t.roleid
+		,t.qdlx
+		,t.xh
+		,t.mbmc
+		,t.start_date
+		,t.end_date
+
+		,t1.user_alias as "modifierDesc"
+		,count(t2.id) as "rwsl"
+		from s_mbgl t
+		left join sys_user t1 on t.modifier = t1.user_name
+		left join
+		s_mbgl_info t2
+		on t.id=t2.glid
+		and t2.status='1'
+		<where>
+			t.status='1'
+			and now() between t.start_date
+			and t.end_date
+			and
+			t.roleid in(
+			select ur.role_id
+			from sys_user_role ur
+			left join sys_user
+			u
+			on ur.user_id=u.id
+			where u.user_name=#{my_task}
+			)
+			and t.orgid = (
+			select u.org_id
+			from sys_user u
+			where u.user_name=#{my_task}
+			)
+		</where>
+		union
+		select
+		<include refid="Base_Column_List" />
+		,t.orgid
+		,t.roleid
+		,t.qdlx
+		,t.xh
+		,t.mbmc
+		,t.start_date
+		,t.end_date
+
+		,t1.user_alias as "modifierDesc"
+		,count(t2.id) as "rwsl"
+		from s_mbgl t
+		left join sys_user t1 on t.modifier = t1.user_name
+		left join
+		s_mbgl_info t2
+		on t.id=t2.glid
+		and t2.status='1'
+		right join s_task t3
+		on t.id=t3.mbid
+		<where>
+			t.status='1'
+			and now() between t.start_date
+			and t.end_date
+			and t3.zxr=#{my_task}
+		</where>
+	</select>
+
+	<select id="selectRolesByOrg" parameterType="HashMap"
+		resultType="MyMap">
+		select distinct
+		r.id role_id,
+		r.role_name,
+		r.role_type
+		from sys_role r
+		left join sys_user_role
+		ur
+		on ur.ROLE_ID=r.id
+		left join sys_user u
+		on
+		u.id=ur.USER_ID
+		left join
+		sys_org o
+		on o.id=u.ORG_ID
+		where 1=1
+		and
+		o.id=#{org_id}
+		<if test="null != role_type and '' != role_type">
+			and r.role_type=#{role_type}
+		</if>
+		order by r.role_code asc
+	</select>
+
+	<delete id="delete" parameterType="HashMap">
+		delete from s_mbgl
+		where id in
+		<foreach collection="id.split(',')" open="(" separator=","
+			close=")" item="item" index="index">
+			#{item}
+		</foreach>
+		;
+
+		delete from s_mbgl_info
+		where glid in
+		<foreach collection="id.split(',')" open="(" separator=","
+			close=")" item="item" index="index">
+			#{item}
+		</foreach>
+	</delete>
+	<insert id="insert" parameterType="HashMap"
+		useGeneratedKeys="true" keyProperty="id">
+		insert into s_mbgl (
+		id
+		,sys_id
+
+		,orgid
+		,roleid
+		,qdlx
+		,xh
+		,mbmc
+		,start_date
+		,end_date
+
+		,pid
+		,pdid
+		,status
+		,remark
+		,creator
+		,created
+		,modifier
+		,modified
+		,ext1
+		,ext2
+		,ext3
+		,row_version
+		,row_state
+		,row_default
+		,row_hist
+		,key_, version
+		,dept_name
+		,duty_based
+		,duty_purpose
+		,duty_category
+		,duty_scope
+		)
+		values
+		(
+		#{id}
+		,#{sys_id}
+
+		,#{org_id}
+		,#{role_id}
+		,#{qdlx}
+		,#{xh}
+		,#{mbmc}
+		,#{start_date}
+		,#{end_date}
+
+		,#{pid}
+		,#{pdid}
+		,#{status}
+		,#{remark}
+		,#{creator}
+		,#{created}
+		,#{modifier}
+		,#{modified}
+		,#{ext1}
+		,#{ext2}
+		,#{ext3}
+		,#{row_version}
+		,#{row_state}
+		,#{row_default}
+		,#{row_hist}
+		,#{key_}
+		,#{version}
+		,#{dept_name}
+		,#{duty_based}
+		,#{duty_purpose}
+		,#{duty_category}
+		,#{duty_scope}
+		)
+	</insert>
+	<update id="update" parameterType="HashMap">
+		update s_mbgl
+		set
+		qdlx = #{qdlx}
+		,xh = #{xh}
+		,mbmc = #{mbmc}
+		,pid = #{pid}
+		,pdid = #{pdid}
+		,status = #{status}
+		,remark = #{remark}
+		,modifier = #{modifier}
+		,modified = #{modified}
+		,ext1 = #{ext1}
+		,ext2 = #{ext2}
+		,ext3 = #{ext3}
+		,row_version = #{row_version}
+		,row_state = #{row_state}
+		,row_default = #{row_default}
+		,row_hist = #{row_hist}
+		where id = #{id}
+	</update>
+
+	<select id="getLastVersion" resultType="java.lang.Integer">
+		select max(version) from s_bmgl where key_=#{0}
+	</select>
+
+	<update id="updateForCondition">
+		update s_mbgl set modifier=now()
+		<if test="updateMap.status!=null">, status=#{updateMap.status}</if>
+		where 1=1
+		<if test="conditionMap.id!=null">and id=#{conditionMap.id}</if>
+		<if test="conditionMap.key_!=null">and key_=#{conditionMap.key_}</if>
+		<if test="conditionMap.status!=null">and status=#{conditionMap.status}</if>
+	</update>
+</mapper>

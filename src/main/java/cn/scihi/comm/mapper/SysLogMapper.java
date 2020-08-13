@@ -1,0 +1,11 @@
+package cn.scihi.comm.mapper;
+
+import cn.scihi.sdk.base.mapper.IBaseMapper;
+
+/**
+ * @author uplus
+ *
+ */
+public interface SysLogMapper extends IBaseMapper {
+    Long clean();
+}

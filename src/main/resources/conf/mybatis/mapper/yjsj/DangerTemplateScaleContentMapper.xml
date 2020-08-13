@@ -1,0 +1,118 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="cn.scihi.yjsj.mapper.DangerTemplateScaleContentMapper">
+	<select id="select" parameterType="HashMap" resultType="Map">
+		select
+		<include refid="BaseMapper.Base_Column_List_Select" />
+		,t.scale_id as "scale_id"
+		,t.description as "description"
+		,t.basis as "basis"
+		
+		,t.status as "status"
+		from s_danger_template_scale_content t
+		<where>
+			<if test="null != id and '' != id">
+				and t.id = #{id}
+			</if>
+			<if test="null != scale_id and '' != scale_id">
+				and t.scale_id in (
+					select id from (
+							select t10.id,
+							if(find_in_set(t10.parent_id, @pids) > 0, @pids := concat(@pids, ',', t10.id), 0) as ischild
+							from (
+									 select t9.id,t9.parent_id from s_danger_template_scale t9
+									 order by t9.created
+							) t10,
+							(select @pids := #{scale_id}) t8
+					) t11 where ischild != '0'  or t11.id = #{scale_id}
+				)
+			</if>
+			<if test="null != sys_id and '' != sys_id">
+				and t.sys_id = #{sys_id}
+			</if>
+			<if test="null != row_default and '' != row_default">
+				and t.row_default = #{row_default}
+			</if>
+			<if test="null != row_state and '' != row_state">
+				and t.row_state = #{row_state}
+			</if>
+			<if test="null != row_version and '' != row_version">
+				and t.row_version = #{row_version}
+			</if>
+			<if test="null != keywords and '' != keywords">
+				and (
+				t.description like '%${keywords}%' 
+				)
+			</if>
+		</where>
+		<choose>
+			<when test="null != orderStr_ and '' != orderStr_">
+				${orderStr_}
+			</when>
+			<otherwise>
+				order by created
+			</otherwise>
+		</choose>
+	</select>
+	
+	<delete id="delete" parameterType="HashMap">
+		delete from s_danger_template_scale_content 
+		where 
+		<if test="null != id and '' != id">
+			id in
+			<foreach collection="id.split(',')" open="(" separator="," close=")" item="item" index="index">
+				#{item}
+			</foreach>
+		</if>
+		<if test="null != scale_tree_id and '' != scale_tree_id">
+			scale_id in(
+				select id from (
+					select t10.id,
+					if(find_in_set(t10.parent_id, @pids) > 0, @pids := concat(@pids, ',', t10.id), 0) as ischild
+					from (
+						 select t9.id,t9.parent_id from s_danger_template_scale t9
+						 order by t9.created
+					) t10,
+					(select @pids := #{scale_tree_id}) t8
+				) t11 where ischild != '0'
+			)
+		</if>
+	</delete>
+	
+	<insert id="insert" parameterType="HashMap" useGeneratedKeys="true" keyProperty="id">
+		insert into s_danger_template_scale_content (
+		<include refid="BaseMapper.Base_Column_List_Insert" />
+		,scale_id
+		,description
+		,basis
+		<if test="null != status">
+		,status
+		</if>
+		)
+		values
+		(
+		<include refid="BaseMapper.Base_Column_List_Insert_Values" />
+		,#{scale_id}
+		,#{description}
+		,#{basis}
+		<if test="null != status">
+		,#{status}
+		</if>
+		)
+	</insert>
+	
+	<update id="update" parameterType="HashMap">
+		update s_danger_template_scale_content
+		<set>
+			<include refid="BaseMapper.Base_Column_List_Update" />
+			<if test="null != description">
+				description = #{description}
+			</if>
+			<if test="null != basis">
+				,basis = #{basis}
+			</if>
+		</set>
+		where 
+		id = #{id}
+	</update>
+</mapper>

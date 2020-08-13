@@ -1,0 +1,92 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="cn.scihi.mbgl.mapper.ReportMapper">
+    <select id="lvzhi1" resultType="java.util.HashMap">
+        select tt.*, tt.finished/tt.total percent from(
+
+        select ifnull(t.task_req,'其他') category, sum(if(t.status=2,1,0)) finished, sum(1) total
+        from s_task t
+        where t.status!=-1
+        <if test="null != org_id and '' != org_id">
+            and t.zxr in (select user_name from sys_user where org_id=#{org_id})
+        </if>
+        <if test="null != year and '' != year">
+            and DATE_FORMAT(t.created,'%Y') = #{year}
+            <if test="null != month and '' != month">
+                and DATE_FORMAT(t.created,'%m') = #{month}
+            </if>
+        </if>
+        group by t.task_req
+
+        ) tt
+    </select>
+
+    <select id="lvzhi2" resultType="java.util.HashMap">
+        select tt.*, tt.finished/tt.total percent from(
+
+        select sorg.id org_id, sorg.org_name org_name, sum(if(t.status=2,1,0)) finished, sum(1) total
+        from s_task t
+        left join sys_user suser on suser.USER_NAME=t.zxr
+        left join sys_org sorg on sorg.ID=suser.org_id
+        where t.status!=-1
+        <if test="null != org_id and '' != org_id">
+            and (sorg.id=#{org_id} or sorg.parent_id=#{org_id})
+        </if>
+        <if test="null != year and '' != year">
+            and DATE_FORMAT(t.created,'%Y') = #{year}
+            <if test="null != month and '' != month">
+                and DATE_FORMAT(t.created,'%m') = #{month}
+            </if>
+        </if>
+        group by sorg.id
+        <if test="null != org_id and '' != org_id">
+            order by if(sorg.id=#{org_id},1,0) desc
+        </if>
+
+        ) tt
+    </select>
+
+    <select id="zhifaByMonth" resultType="java.util.HashMap">
+        select tt.*, tt.finished/tt.total percent from(
+
+        select sum(if(t.status=2,1,0)) finished, sum(1) total
+        from s_danger_template_task t
+        where t.status!=-1
+        <if test="null != org_id and '' != org_id">
+            and t.law_user in (select user_name from sys_user where org_id=#{org_id})
+        </if>
+        <if test="null != year and '' != year">
+            and DATE_FORMAT(t.created,'%Y') = #{year}
+            <if test="null != month and '' != month">
+                and DATE_FORMAT(t.created,'%m') = #{month}
+            </if>
+        </if>
+
+        ) tt
+    </select>
+
+    <select id="zaihailevel" resultType="java.util.HashMap">
+        select t1.zh_jb tname, count(1) ct
+        from s_zhd t1
+        left join s_jddgl t2 on t2.id=t1.zhd_parent_id
+        where t2.jddgl_jgbm=#{org_id}
+        <if test="null != year and '' != year">
+            and DATE_FORMAT(t1.zhd_fssj,'%Y') = #{year}
+            <if test="null != month and '' != month">
+                and DATE_FORMAT(t1.zhd_fssj,'%m') = #{month}
+            </if>
+        </if>
+        group by t1.zh_jb
+    </select>
+
+    <select id="zaihaiqushi" resultType="java.util.HashMap">
+        select year(t1.zhd_fssj) year, count(1) total
+        from s_zhd t1
+        left join s_jddgl t2 on t2.id=t1.zhd_parent_id
+        where t2.jddgl_jgbm=#{org_id}
+        and zhd_fssj>#{startDate}
+        group by year(t1.zhd_fssj)
+        order by year(t1.zhd_fssj)
+    </select>
+
+</mapper>

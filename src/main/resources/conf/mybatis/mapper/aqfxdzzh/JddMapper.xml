@@ -1,0 +1,166 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="cn.scihi.aqfxdzzh.mapper.JddMapper">
+	 
+	<select id="select" parameterType="HashMap" resultType="MyMap">
+		select
+		<include refid="BaseMapper.Base_Column_List_Select" />
+		,t.jddgl_bh
+		,t.jddgl_mc
+		,t.jddgl_dz
+		,t.jddgl_jgbm
+		,t.jddgl_ztjg
+		,t.jddgl_lxr
+		,t.jddgl_lxdh
+		,t.jddgl_jd
+		,t.jddgl_wd
+		,t.jddgl_bz
+		,t.jddgl_fxydj
+		,org.ORG_NAME as 'jddgl_jgbm_desc'
+		,org_ztjg.ORG_NAME as 'jddgl_ztjg_desc'
+		,dict_jb.dict_name as 'jddgl_fxydj_desc' 
+
+		<!-- ,t1.user_alias as "jddgl_lxr_desc"  -->
+
+		from s_jddgl t
+		left join sys_user t1 on t.jddgl_lxr = t1.user_name 
+		LEFT JOIN sys_org  org on org.id= t.jddgl_jgbm 
+		LEFT JOIN sys_org  org_ztjg on org_ztjg.id= t.jddgl_ztjg 
+		LEFT JOIN sys_dict dict_jb on dict_jb.id =t.jddgl_fxydj AND dict_jb.PARENT_ID ='fxy_jb' 
+		
+		<where>
+			<if test="null != id and '' != id">
+				t.id = #{id}
+			</if>
+			<if test="null != sys_id and '' != sys_id">
+				and t.sys_id = #{sys_id}
+			</if>
+			<if test="null != pid and '' != pid">
+				and t.pid = #{pid}
+			</if>
+			<if test="null != pdid and '' != pdid">
+				and t.pdid = #{pdid}
+			</if>
+			
+			<if test="null != jddgl_jgbm and '' != jddgl_jgbm">
+				and t.jddgl_jgbm in (
+					select aa.id from sys_org aa
+					left join sys_org bb on aa.parent_ids like concat(bb.parent_ids, '%')
+					where bb.id=#{jddgl_jgbm}
+				)
+			</if>
+			<if test="null != jddgl_ztjg and '' != jddgl_ztjg">
+				and t.jddgl_ztjg = #{jddgl_ztjg}
+			</if>
+			<if test="null != jddgl_lxr and '' != jddgl_lxr">
+				and t.jddgl_lxr = #{jddgl_lxr}
+			</if>
+			<if test="null != jddgl_fxydj and '' != jddgl_fxydj">
+				and t.jddgl_fxydj = #{jddgl_fxydj}
+			</if>
+			
+			
+			<if test="null != keywords and '' != keywords">
+				and (t.jddgl_bh like '%${keywords}%' 
+				or t.jddgl_mc like '%${keywords}%' 
+				or t.jddgl_dz like '%${keywords}%' 
+				or t.jddgl_lxr like '%${keywords}%'  
+				or t.jddgl_lxdh like '%${keywords}%'  
+				or org.ORG_NAME like '%${keywords}%' 
+				or org_ztjg.ORG_NAME like '%${keywords}%' 
+				or dict_jb.dict_name  like '%${keywords}%'
+				)
+			</if>
+		</where> 
+		
+		<if test="null != orderStr_ and '' != orderStr_">
+			${orderStr_}
+		</if>
+		<!-- order by t.xh+0, t.modified desc -->
+	</select>
+	<delete id="delete" parameterType="HashMap">
+		delete from s_jddgl 
+		where id in
+		<foreach collection="id.split(',')" open="(" separator="," close=")" item="item" index="index">  
+			#{item}
+		</foreach> 
+	</delete>
+	<insert id="insert" parameterType="HashMap" useGeneratedKeys="true" keyProperty="id">
+		insert into s_jddgl (
+		<include refid="BaseMapper.Base_Column_List_Insert" />
+		
+		,jddgl_bh
+		,jddgl_mc
+		,jddgl_dz
+		,jddgl_jgbm
+		,jddgl_ztjg
+		,jddgl_lxr
+		,jddgl_lxdh
+		,jddgl_jd
+		,jddgl_wd
+		,jddgl_bz
+		,jddgl_fxydj
+		)
+		values
+		(
+		<include refid="BaseMapper.Base_Column_List_Insert_Values" />
+		
+		,#{jddgl_bh}
+		,#{jddgl_mc}
+		,#{jddgl_dz}
+		,#{jddgl_jgbm}
+		,#{jddgl_ztjg} 
+		,#{jddgl_lxr}
+		,#{jddgl_lxdh}
+		,#{jddgl_jd}
+		,#{jddgl_wd}
+		,#{jddgl_bz} 
+		,#{jddgl_fxydj}
+		)
+	</insert>
+	<update id="update" parameterType="HashMap">
+		
+		update s_jddgl
+		<set>
+			<include refid="BaseMapper.Base_Column_List_Update" />
+			<if test="null != jddgl_bh">
+				jddgl_bh = #{jddgl_bh},
+			</if>
+			<if test="null != jddgl_mc">
+				jddgl_mc = #{jddgl_mc},
+			</if>
+			<if test="null != jddgl_dz">
+				jddgl_dz = #{jddgl_dz},
+			</if>
+			<if test="null != jddgl_jgbm">
+				jddgl_jgbm = #{jddgl_jgbm},
+			</if>
+			<if test="null != jddgl_jgbm">
+				jddgl_ztjg = #{jddgl_ztjg},
+			</if>
+			 <if test="null != jddgl_lxr">
+				jddgl_lxr = #{jddgl_lxr},
+			</if>
+			<if test="null != jddgl_lxdh">
+				jddgl_lxdh = #{jddgl_lxdh},
+			</if>
+			
+			<if test="null != jddgl_jd">
+				jddgl_jd = #{jddgl_jd},
+			</if>
+			<if test="null != jddgl_wd">
+				jddgl_wd = #{jddgl_wd},
+			</if>
+			<if test="null != jddgl_bz">
+				jddgl_bz = #{jddgl_bz},
+			</if>
+			<if test="null != jddgl_fxydj">
+				jddgl_fxydj = #{jddgl_fxydj},
+			</if>
+			
+			 
+		</set>
+		where 
+		id = #{id}
+	</update>
+</mapper>

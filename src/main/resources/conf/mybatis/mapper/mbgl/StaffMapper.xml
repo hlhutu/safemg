@@ -1,0 +1,43 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="cn.scihi.mbgl.mapper.StaffMapper">
+    <select id="queryMyDown" resultType="cn.scihi.mbgl.bean.Staff">
+        select suser_child.id id
+        ,suser_child.USER_NAME username
+        ,suser_child.USER_ALIAS user_alias
+        <!--,suser_child.USER_PHOTO user_photo-->
+        ,sorg_child.id org_id
+        ,sorg_child.ORG_NAME org_name
+        ,GROUP_CONCAT(srole.id) role_ids
+        ,GROUP_CONCAT(srole.ROLE_NAME) role_names
+        from sys_user suser
+        left join sys_org sorg on suser.ORG_ID=sorg.ID
+        left join sys_org sorg_child on sorg_child.PARENT_ID=sorg.ID
+        left join sys_user suser_child on suser_child.ORG_ID=sorg_child.ID
+        left join sys_user_role sur on sur.USER_ID=suser_child.ID
+        left join sys_role srole on srole.ID=sur.ROLE_ID
+        where suser_child.id is not null
+        and EXISTS(
+            select 1 from s_mbgl sm where sm.orgid=sorg_child.id and sm.roleid=srole.id
+        )
+        and suser.USER_NAME=#{0}
+        group by suser_child.id
+    </select>
+
+    <select id="queryUsersByOrgIdAndRoleId" parameterType="java.util.Map" resultType="cn.scihi.mbgl.bean.Staff">
+        select suser.id id
+            ,suser.USER_NAME username
+            ,suser.USER_NAME user_name
+            ,suser.USER_ALIAS user_alias
+            ,suser.mobile_phone
+        from sys_user suser
+        where suser.org_id=#{orgId}
+        and suser.id in (
+            select user_id from sys_user_role where role_id=#{roleId}
+        )
+    </select>
+
+    <select id="exist" resultType="java.lang.Long">
+        select count(1) from sys_user where user_name=#{0}
+    </select>
+</mapper>

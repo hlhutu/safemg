@@ -1,0 +1,212 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="cn.scihi.meeting.mapper.MeetingMapper">
+    <select id="select" parameterType="HashMap" resultType="Map">
+        select
+        t.id,t.status,t.username,t.mobile_phone,t.title,t.category,t.description,t.expected_start,t.expected_end,t.real_start,t.real_end,t.sys_id,t.created
+        ,t.address,aa.user_alias
+        from s_meeting t
+        left join sys_user aa on t.username=aa.user_name
+        <where>
+            <if test="null != sys_id and '' != sys_id">
+                and t.sys_id = #{sys_id}
+            </if>
+            <if test="null != id and '' != id">
+                and t.id = #{id}
+            </if>
+            <if test="null != status and '' != status">
+                and t.status = #{status}
+            </if>
+            <if test="null != username and '' != username">
+                and t.username = #{username}
+            </if>
+            <if test="null != mobile_phone and '' != mobile_phone">
+                and t.mobile_phone = #{mobile_phone}
+            </if>
+            <if test="null != title and '' != title">
+                and t.title = #{title}
+            </if>
+            <if test="null != category and '' != category">
+                and t.category = #{category}
+            </if>
+            <if test="null != description and '' != description">
+                and t.description = #{description}
+            </if>
+            <if test="null != expected_start and '' != expected_start">
+                and t.expected_start = #{expected_start}
+            </if>
+            <if test="null != expected_end and '' != expected_end">
+                and t.expected_end = #{expected_end}
+            </if>
+            <if test="null != real_start and '' != real_start">
+                and t.real_start = #{real_start}
+            </if>
+            <if test="null != real_end and '' != real_end">
+                and t.real_end = #{real_end}
+            </if>
+            <if test="null != keywords and '' != keywords">
+                and (t.title like concat('%',#{keywords},'%')
+                or t.description like concat('%',#{keywords},'%')
+                )
+            </if>
+        </where>
+        <choose>
+            <when test="null != orderStr_ and '' != orderStr_">
+                ${orderStr_}
+            </when>
+            <otherwise>
+                order by case status when 'RUNNING' then 1 when 'CREATED' then 2 when 'FINISHED' then 3 end, t.created desc
+            </otherwise>
+        </choose>
+    </select>
+
+    <select id="selectForBean" parameterType="HashMap" resultType="cn.scihi.meeting.bean.Meeting">
+        select
+        t.id,t.status,t.username,t.mobile_phone,t.title,t.category,t.description,t.expected_start,t.expected_end,t.real_start,t.real_end,t.sys_id,t.created
+        ,t.address,aa.user_alias
+        from s_meeting t
+        left join sys_user aa on t.username=aa.user_name
+        <where>
+            <if test="null != sys_id and '' != sys_id">
+                and t.sys_id = #{sys_id}
+            </if>
+            <if test="null != id and '' != id">
+                and t.id = #{id}
+            </if>
+            <if test="null != ids and '' != ids">
+                and t.id in
+                <foreach collection="ids.split(',')" item="meetingId" open="(" close=")" separator=",">
+                    #{meetingId}
+                </foreach>
+            </if>
+            <if test="null != status and '' != status">
+                and t.status = #{status}
+            </if>
+            <if test="null != username and '' != username">
+                and (t.username = #{username}
+                    or (
+                        t.id in (select meeting_id from s_meeting_member where username=#{username})
+                        or t.id in (select meeting_id from s_meeting_sign_log where username=#{username})
+                    )
+                )
+            </if>
+            <if test="null != mobile_phone and '' != mobile_phone">
+                and t.mobile_phone = #{mobile_phone}
+            </if>
+            <if test="null != title and '' != title">
+                and t.title = #{title}
+            </if>
+            <if test="null != category and '' != category">
+                and t.category = #{category}
+            </if>
+            <if test="null != description and '' != description">
+                and t.description = #{description}
+            </if>
+            <if test="null != expected_start and '' != expected_start">
+                and t.expected_start = #{expected_start}
+            </if>
+            <if test="null != expected_end and '' != expected_end">
+                and t.expected_end = #{expected_end}
+            </if>
+            <if test="null != real_start and '' != real_start">
+                and t.real_start = #{real_start}
+            </if>
+            <if test="null != year and '' != year">
+                and (
+                DATE_FORMAT(t.real_start,'%Y') = #{year} or DATE_FORMAT(t.expected_start,'%Y') = #{year}
+                )
+                <if test="null != month and '' != month">
+                    and (
+                    DATE_FORMAT(t.real_start,'%m') = #{month} or DATE_FORMAT(t.expected_start,'%Y') = #{month}
+                    )
+                </if>
+            </if>
+            <if test="null != real_end and '' != real_end">
+                and t.real_end = #{real_end}
+            </if>
+            <if test="null != keywords and '' != keywords">
+                and (t.title like concat('%',#{keywords},'%')
+                or t.description like concat('%',#{keywords},'%')
+                )
+            </if>
+        </where>
+        <choose>
+            <when test="null != orderStr_ and '' != orderStr_">
+                ${orderStr_}
+            </when>
+            <otherwise>
+                order by case status when 'RUNNING' then 1 when 'CREATED' then 2 when 'FINISHED' then 3 end, t.created desc
+            </otherwise>
+        </choose>
+    </select>
+
+    <delete id="delete" parameterType="HashMap">
+        delete from s_meeting
+        where id in
+        <foreach collection="id.split(',')" open="(" separator="," close=")" item="item">
+            #{item}
+        </foreach>
+    </delete>
+    <insert id="insert" parameterType="HashMap" useGeneratedKeys="true" keyProperty="id">
+        insert into s_meeting(id,status,username,mobile_phone,title,category,description,expected_start,expected_end,real_start,real_end,sys_id,created,address)
+        values (#{id},'CREATED',#{username},#{mobile_phone},#{title},#{category},#{description},#{expected_start},#{expected_end},#{real_start},#{real_end},#{sys_id},now(),#{address})
+    </insert>
+    <update id="update" parameterType="HashMap">
+        update s_meeting
+        <set>
+            <if test="null != status">
+                status = #{status},
+            </if>
+            <if test="null != username">
+                username = #{username},
+            </if>
+            <if test="null != mobile_phone">
+                mobile_phone = #{mobile_phone},
+            </if>
+            <if test="null != title">
+                title = #{title},
+            </if>
+            <if test="null != category">
+                category = #{category},
+            </if>
+            <if test="null != description">
+                description = #{description},
+            </if>
+            <if test="null != expected_start">
+                expected_start = #{expected_start},
+            </if>
+            <if test="null != expected_end">
+                expected_end = #{expected_end},
+            </if>
+            <if test="null != real_start">
+                real_start = #{real_start},
+            </if>
+            <if test="null != real_end">
+                real_end = #{real_end},
+            </if>
+        </set>
+        where id = #{id}
+    </update>
+
+    <select id="countByStatus" resultType="java.util.Map">
+        select t.status, count(1) total from s_meeting t
+        where (
+            t.username = #{username}
+            or (
+                t.id in (select meeting_id from s_meeting_member where username=#{username})
+                or t.id in (select meeting_id from s_meeting_sign_log where username=#{username})
+            )
+        )
+        <if test="null != year and '' != year">
+            and (
+                DATE_FORMAT(t.real_start,'%Y') = #{year} or DATE_FORMAT(t.expected_start,'%Y') = #{year}
+            )
+            <if test="null != month and '' != month">
+                and (
+                    DATE_FORMAT(t.real_start,'%m') = #{month} or DATE_FORMAT(t.expected_start,'%Y') = #{month}
+                )
+            </if>
+        </if>
+        group by t.status
+    </select>
+</mapper>

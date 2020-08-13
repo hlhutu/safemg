@@ -1,0 +1,123 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="cn.scihi.xxgl.mapper.XxjlglMapper">
+	<select id="select" parameterType="HashMap" resultType="Map">
+		select
+		<include refid="BaseMapper.Base_Column_List_Select" />
+		,t.xxjlgl_task_id as "xxjlgl_task_id"
+		,t.xxjlgl_xxkid as "xxjlgl_xxkid"
+		,t.file_id as "file_id"
+		
+		,t1.user_alias as "creator_alias"
+		
+		,t.status as "status"
+		from s_xxjlgl t
+		left join sys_user t1
+		on t1.user_name = t.creator
+		<where>
+			<if test="null != id and '' != id">
+				and t.id = #{id}
+			</if>
+			<if test="null != sys_id and '' != sys_id">
+				and t.sys_id = #{sys_id}
+			</if>
+			<if test="null != file_id and '' != file_id">
+				and t.file_id = #{file_id}
+			</if>
+			<if test="null != xxjlgl_task_id and '' != xxjlgl_task_id">
+				and t.xxjlgl_task_id = #{xxjlgl_task_id}
+			</if>
+			<if test="null != xxjlgl_xxkid and '' != xxjlgl_xxkid">
+				and t.xxjlgl_xxkid = #{xxjlgl_xxkid}
+			</if>
+			<if test="null != row_default and '' != row_default">
+				and t.row_default = #{row_default}
+			</if>
+			<if test="null != row_state and '' != row_state">
+				and t.row_state = #{row_state}
+			</if>
+			<if test="null != row_version and '' != row_version">
+				and t.row_version = #{row_version}
+			</if>
+			<if test="null != creator and '' != creator">
+				and t.creator = #{creator}
+			</if>
+			<if test="null != keywords and '' != keywords">
+				and (
+				t.status like '%${keywords}%' 
+				)
+			</if>
+		</where>
+		<choose>
+			<when test="null != orderStr_ and '' != orderStr_">
+				${orderStr_}
+			</when>
+			<otherwise>
+				order by sort_no
+			</otherwise>
+		</choose>
+	</select>
+	
+	<delete id="delete" parameterType="HashMap">
+		delete from s_xxjlgl 
+		where id in
+		<foreach collection="id.split(',')" open="(" separator="," close=")" item="item" index="index">
+			#{item}
+		</foreach>
+	</delete>
+	
+	<insert id="insert" parameterType="HashMap" useGeneratedKeys="true" keyProperty="id">
+		insert into s_xxjlgl (
+		<include refid="BaseMapper.Base_Column_List_Insert" />
+		<if test="null != xxjlgl_task_id">
+		,xxjlgl_task_id
+		</if>
+		<if test="null != xxjlgl_xxkid">
+		,xxjlgl_xxkid
+		</if>
+		<if test="null != file_id">
+		,file_id
+		</if>
+		<if test="null != status">
+		,status
+		</if>
+		)
+		values
+		(
+		<include refid="BaseMapper.Base_Column_List_Insert_Values" />
+		<if test="null != xxjlgl_task_id">
+		,#{xxjlgl_task_id}
+		</if>
+		<if test="null != xxjlgl_xxkid">
+		,#{xxjlgl_xxkid}
+		</if>
+		<if test="null != file_id">
+		,#{file_id}
+		</if>
+		<if test="null != status">
+		,#{status}
+		</if>
+		)
+	</insert>
+	
+	<update id="update" parameterType="HashMap">
+		update s_xxjlgl
+		<set>
+			<include refid="BaseMapper.Base_Column_List_Update" />
+			<if test="null != xxjlgl_task_id">
+				xxjlgl_task_id = #{xxjlgl_task_id}
+			</if>
+			<if test="null != xxjlgl_xxkid">
+				,xxjlgl_xxkid = #{xxjlgl_xxkid}
+			</if>
+			<if test="null != file_id">
+				,file_id = #{file_id}
+			</if>
+			<if test="null != status">
+				,status = #{status}
+			</if>
+		</set>
+		where 
+		id = #{id}
+	</update>
+</mapper>

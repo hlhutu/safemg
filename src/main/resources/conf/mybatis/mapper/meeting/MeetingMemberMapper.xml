@@ -1,0 +1,110 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="cn.scihi.meeting.mapper.MeetingMemberMapper">
+    <select id="select" parameterType="HashMap" resultType="Map">
+        select
+        t.id,t.meeting_id,t.username
+        from s_meeting_member t
+        <where>
+            <if test="null != id and '' != id">
+                and t.id = #{id}
+            </if>
+            <if test="null != meeting_id and '' != meeting_id">
+                and t.meeting_id = #{meeting_id}
+            </if>
+            <if test="null != username and '' != username">
+                and t.username = #{username}
+            </if>
+        </where>
+        <choose>
+            <when test="null != orderStr_ and '' != orderStr_">
+                ${orderStr_}
+            </when>
+        </choose>
+    </select>
+
+    <select id="selectForBean" parameterType="HashMap" resultType="cn.scihi.meeting.bean.MeetingMember">
+        select
+        t.id,t.meeting_id,t.username,t2.sign_date, t2.sign_out_date,1 duty, if(t2.id,1,0) come
+        ,t1.user_name,t1.user_alias
+        from s_meeting_member t
+        left join sys_user t1 on t.username=t1.user_name
+        left join s_meeting_sign_log t2 on t2.meeting_id=t.meeting_id and t2.username=t.username
+        <where>
+            <if test="null != id and '' != id">
+                and t.id = #{id}
+            </if>
+            <if test="null != meeting_id and '' != meeting_id">
+                and t.meeting_id = #{meeting_id}
+            </if>
+            <if test="null != username and '' != username">
+                and t.username = #{username}
+            </if>
+        </where>
+        <choose>
+            <when test="null != orderStr_ and '' != orderStr_">
+                ${orderStr_}
+            </when>
+        </choose>
+    </select>
+
+    <select id="selectExUser" parameterType="HashMap" resultType="cn.scihi.meeting.bean.MeetingMember">
+        select
+        t.id,t.meeting_id,t.username, t.sign_date, t.sign_out_date,if(t2.id,1,0) duty, 1 come
+        ,t1.user_name,t1.user_alias
+        from s_meeting_sign_log t
+        left join sys_user t1 on t.username=t1.user_name
+        left join s_meeting_member t2 on t2.meeting_id=t.meeting_id and t2.username=t.username
+        <where>
+            t2.id is null<!-- 只查询不应该出席的 -->
+            <if test="null != id and '' != id">
+                and t.id = #{id}
+            </if>
+            <if test="null != meeting_id and '' != meeting_id">
+                and t.meeting_id = #{meeting_id}
+            </if>
+            <if test="null != username and '' != username">
+                and t.username = #{username}
+            </if>
+        </where>
+        order by t.sign_date desc
+    </select>
+
+    <delete id="delete" parameterType="HashMap">
+        delete from s_meeting_member
+        <where>
+            <if test="id!=null and id!=''">
+                and id in
+                <foreach collection="id.split(',')" open="(" separator="," close=")" item="item">
+                    #{item}
+                </foreach>
+            </if>
+            <if test="meeting_id!=null and meeting_id!=''">
+                and meeting_id = #{meeting_id}
+            </if>
+        </where>
+    </delete>
+    <insert id="insert" parameterType="HashMap" useGeneratedKeys="true" keyProperty="id">
+        insert into s_meeting_member (id,meeting_id,username )
+        values (#{id},#{meeting_id},#{username})
+    </insert>
+    <insert id="saveMembers">
+        insert into s_meeting_member (id,meeting_id,username )
+        values
+        <foreach collection="usernames" item="username" separator=",">
+            (replace(uuid(), '-', ''),#{meeting_id},#{username})
+        </foreach>
+    </insert>
+    <update id="update" parameterType="HashMap">
+        update s_meeting_member
+        <set>
+            <if test="null != meeting_id">
+                meeting_id = #{meeting_id},
+            </if>
+            <if test="null != username">
+                username = #{username},
+            </if>
+        </set>
+        where id = #{id}
+    </update>
+</mapper>

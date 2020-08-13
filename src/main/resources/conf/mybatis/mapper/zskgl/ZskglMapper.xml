@@ -1,0 +1,154 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="cn.scihi.zskgl.mapper.ZskglMapper">
+	 
+	<select id="select" parameterType="HashMap" resultType="MyMap">
+		select
+		<include refid="BaseMapper.Base_Column_List_Select" />
+		,t.zskgl_title
+		,t.zskgl_remark
+		,t.zskgl_author
+		,t.zskgl_org
+		,t.zskgl_publish_time
+		,t.zskgl_type
+		<if test="null != id and '' != id">
+		,t.zskgl_content
+		</if>
+		<if test="null != need_min_pic and '' != need_min_pic">
+		,t.zskgl_minpic
+		</if>
+		,t.status
+		,t.k_lx 
+
+		,t1.user_alias as "modifier_desc"
+		,t2.user_alias as "zskgl_author_desc"
+		,dict_zsklx.dict_name as zskgl_type_desc
+
+		from s_zskgl t
+		left join sys_user t1 on t.modifier = t1.user_name
+		left join sys_user t2 on t.zskgl_author = t2. user_name
+		left join sys_dict dict_zsklx on dict_zsklx.PARENT_ID in ('zsklx','zyklx','yjyalx') and t.zskgl_type=dict_zsklx.id
+		
+		<where>
+			<if test="null != id and '' != id">
+				t.id = #{id}
+			</if>
+			<if test="null != sys_id and '' != sys_id">
+				and t.sys_id = #{sys_id}
+			</if>
+			<if test="null != pid and '' != pid">
+				and t.pid = #{pid}
+			</if>
+			<if test="null != pdid and '' != pdid">
+				and t.pdid = #{pdid}
+			</if>
+			<if test="null != status and '' != status">
+				and t.status = #{status}
+			</if>
+			<if test="null != zskgl_type and '' != zskgl_type">
+				and t.zskgl_type = #{zskgl_type}
+			</if>
+			<if test="null != zskgl_org and '' != zskgl_org">
+				and t.zskgl_org = #{zskgl_org}
+			</if>
+			<if test="null != k_lx and '' != k_lx">
+				and t.k_lx = #{k_lx}
+			</if>
+			
+			
+			<if test="null != keywords and '' != keywords">
+				and (t.zskgl_title like '${keywords}%'
+				or t.zskgl_remark like '${keywords}%'
+				or t1.user_alias like '${keywords}%'
+				or t2.user_alias like '${keywords}%'
+				or t.zskgl_publish_time like binary '${keywords}%' 
+				or dict_zsklx.dict_name  like '${keywords}%'
+				)
+			</if>
+		</where> 
+		
+		<if test="null != orderStr_ and '' != orderStr_">
+			${orderStr_}
+		</if>
+		<!-- order by t.xh+0, t.modified desc -->
+	</select>
+	<delete id="delete" parameterType="HashMap">
+		delete from s_zskgl 
+		where id in
+		<foreach collection="id.split(',')" open="(" separator="," close=")" item="item" index="index">  
+			#{item}
+		</foreach> 
+	</delete>
+	<insert id="insert" parameterType="HashMap" useGeneratedKeys="true" keyProperty="id">
+		insert into s_zskgl (
+		<include refid="BaseMapper.Base_Column_List_Insert" />
+		
+		,zskgl_title
+		,zskgl_remark
+		,zskgl_author
+		,zskgl_org
+		<if test="null != zskgl_publish_time and '' != zskgl_publish_time">
+		,zskgl_publish_time
+		</if>
+		,zskgl_type
+		,zskgl_content
+		,zskgl_minpic
+		,k_lx
+		,status
+		)
+		values
+		(
+		<include refid="BaseMapper.Base_Column_List_Insert_Values" />
+		
+		,#{zskgl_title}
+		,#{zskgl_remark}
+		,#{zskgl_author}
+		,#{zskgl_org}
+		<if test="null != zskgl_publish_time and '' != zskgl_publish_time">
+		 ,#{zskgl_publish_time}
+		</if> 
+		,#{zskgl_type}
+		,#{zskgl_content}
+		,#{zskgl_minpic} 
+		,#{k_lx} 
+		,#{status}
+		)
+	</insert>
+	<update id="update" parameterType="HashMap">
+		
+		update s_zskgl
+		<set>
+			<include refid="BaseMapper.Base_Column_List_Update" />
+			<if test="null != zskgl_title">
+				zskgl_title = #{zskgl_title},
+			</if>
+			<if test="null != zskgl_remark">
+				zskgl_remark = #{zskgl_remark},
+			</if>
+			<if test="null != zskgl_remark">
+				zskgl_remark = #{zskgl_remark},
+			</if>
+			<if test="null != zskgl_author">
+				zskgl_author = #{zskgl_author},
+			</if>
+			 <if test="null != zskgl_type">
+				zskgl_type = #{zskgl_type},
+			</if>
+			<if test="null != zskgl_content">
+				zskgl_content = #{zskgl_content},
+			</if>
+			<if test="null != zskgl_minpic">
+				zskgl_minpic = #{zskgl_minpic},
+			</if>
+			<if test="null != k_lx">
+				k_lx = #{k_lx},
+			</if>  
+			<if test="null != status">
+				status = #{status},
+			</if>
+			 
+		</set>
+		where 
+		id = #{id}
+	</update>
+</mapper>

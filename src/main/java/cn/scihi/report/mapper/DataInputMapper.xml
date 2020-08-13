@@ -1,0 +1,65 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="cn.scihi.report.mapper.DataInputMapper">
+	<select id="queryOrgUsersReport" parameterType="HashMap" resultType="Map">
+		(
+			select aa1.id, aa1.org_name, count(bb1.id) user_count, -1 sort_no
+			from sys_org aa1
+			left join sys_user bb1 on bb1.org_id=aa1.id
+			where aa1.id=#{p_org_id}
+			group by aa1.id
+		)
+		union
+		(
+			select aa.id, aa.org_name, count(bb.id) user_count, aa.SORT_NO
+			from sys_org aa
+			left join (
+			select su.id, su.user_name, su.USER_ALIAS, so1.id org_id, so1.PARENT_IDS from sys_user su
+			left join sys_org so1 on so1.id=su.org_id
+			) bb on bb.PARENT_IDS like concat(aa.PARENT_IDS, '%')
+			where aa.PARENT_ID=#{p_org_id}
+			group by aa.id, aa.org_name
+		)
+		order by sort_no
+	</select>
+
+	<select id="queryOrgRolesReport" parameterType="HashMap" resultType="Map">
+		(
+			select aa.id, aa.org_name, count(DISTINCT sr.id) role_count, count(DISTINCT sm.id) model_count, aa.sort_no
+			from sys_org aa
+			left join sys_role sr on sr.role_type='2' and sr.id in (
+				select role_id from sys_user_role sur
+				left join sys_user su on su.id=sur.user_id
+				where su.org_id=aa.id
+			)
+			left join s_mbgl sm on sm.roleid=sr.id and sm.orgid=aa.id
+			where aa.id = #{p_org_id}
+			group by aa.id
+		)
+		<if test="orgs.size > 1">
+			union
+			(
+				select aa1.id, aa1.org_name, count(DISTINCT tmp.role_id) role_count, count(DISTINCT tmp.model_id) model_count, aa1.sort_no
+				from sys_org aa1
+				left join (
+					select aa.id, aa.org_name, aa.parent_ids, sr.id role_id, sm.id model_id, aa.sort_no
+					from sys_org aa
+					left join sys_role sr on sr.role_type='2' and sr.id in (
+						select role_id from sys_user_role sur
+						left join sys_user su on su.id=sur.user_id
+						where su.org_id=aa.id
+					)
+				left join s_mbgl sm on sm.roleid=sr.id and sm.orgid=aa.id
+				)tmp on tmp.PARENT_IDS like concat(aa1.PARENT_IDS, '%')
+				where aa1.id in
+				<foreach collection="orgs" item="org" separator="," open="(" close=")">
+					<if test="org.id != p_org_id">
+						#{org.id}
+					</if>
+				</foreach>
+				group by aa1.id
+			)
+		</if>
+		order by sort_no
+	</select>
+</mapper>

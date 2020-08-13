@@ -1,0 +1,262 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="cn.scihi.xjgl.mapper.XjglMapper">
+	<select id="select" parameterType="HashMap" resultType="MyMap">
+		select
+		t.id,t.sys_id,t.xjmc,t.xjmb,t.fxid,t.xjlx,t.kssj,t.jssj,t.zxr,t.xjms,t.pid,t.pdid,t.remark,t.sort_no,t.row_state,t.row_default,t.row_hist,t.creator,t.created,t.modifier,t.modified,t.ext1,t.ext2,t.ext3,t.row_version
+		,t.mbid
+		,u.user_alias as "zxr_desc"
+		,u2.user_alias as "modifier_desc"
+		,o.org_name as "xjmb_desc"
+		,o.ORG_ADDRESS as "ORG_ADDRESS"
+		,j.jddgl_mc as "fxid_desc"
+		,j.jddgl_fxydj as "fxy_jb"
+		,j.jddgl_dz as "address"
+		,if(t.kssj > now(),'0',if(t.zxzt is null,'1','2')) as 'zxzt'
+		,count(i.id) as "rwsl"
+		from s_xjgl t
+		left join sys_user u on t.zxr=u.user_name
+		left join sys_user u2 on t.modifier = u2.user_name
+		left join s_xjgl_info i on t.id=i.xj_id
+		left join s_jddgl j on j.id=t.fxid
+		left join sys_org o on t.xjmb=o.id
+		<where>
+			<if test="null != ids and '' != ids">
+				and t.id in
+				<foreach collection="ids.split(',')" open="(" separator=","
+					close=")" item="item">
+					#{item}
+				</foreach>
+			</if>
+			<if test="null != pids and '' != pids">
+				and t.pid in
+				<foreach collection="pids.split(',')" open="(" separator=","
+						 close=")" item="item">
+					#{item}
+				</foreach>
+			</if>
+		
+			<if test="null != id and '' != id">
+				and t.id = #{id}
+			</if>
+			<if test="null != sys_id and '' != sys_id">
+				and t.sys_id = #{sys_id}
+			</if>
+			<if test="null != xjmc and '' != xjmc">
+				and t.xjmc = #{xjmc}
+			</if>
+			<if test="null != mbid and '' != mbid">
+				and t.mbid = #{mbid}
+			</if>
+			<if test="null != fxid and '' != fxid">
+				and t.fxid = #{fxid}
+			</if>
+			<if test="null != zxzt and '0'.toString() eq zxzt">
+				and t.kssj > now()
+			</if>
+			<if test="null != zxzt and '1'.toString() eq zxzt">
+				and t.zxzt is null and  now() > t.kssj
+			</if>
+			<if test="null != zxzt and '2'.toString() eq zxzt">
+				and  t.zxzt = '2'
+			</if>
+			<if test="null != xjmb and '' != xjmb">
+				and t.xjmb = #{xjmb}
+			</if>
+			<if test="null != xjlx and '' != xjlx">
+				and t.xjlx = #{xjlx}
+			</if>
+			<if test="null != kssj and '' != kssj">
+				and t.kssj = #{kssj}
+			</if>
+			<if test="null != jssj and '' != jssj">
+				and t.jssj = #{jssj}
+			</if>
+			
+			<if test="null != year and '' != year">
+				and #{year} between date_format(t.kssj,"%Y") and date_format(t.jssj,"%Y")
+			</if>
+			
+			<if test="null != month and '' != month">
+				and concat(#{year},'-',#{month}) between date_format(t.kssj,"%Y-%m") and date_format(t.jssj,"%Y-%m")
+			</if>
+			
+			<if test="null != zxr and '' != zxr">
+				and t.zxr = #{zxr}
+			</if>
+			<if test="null != xjms and '' != xjms">
+				and t.xjms = #{xjms}
+			</if>
+			<if test="null != pid and '' != pid">
+				and t.pid = #{pid}
+			</if>
+			<if test="null != pdid and '' != pdid">
+				and t.pdid = #{pdid}
+			</if>
+			<if test="null != remark and '' != remark">
+				and t.remark = #{remark}
+			</if>
+			<if test="null != sort_no and '' != sort_no">
+				and t.sort_no = #{sort_no}
+			</if>
+			<if test="null != row_state and '' != row_state">
+				and t.row_state = #{row_state}
+			</if>
+			<if test="null != row_default and '' != row_default">
+				and t.row_default = #{row_default}
+			</if>
+			<if test="null != row_hist and '' != row_hist">
+				and t.row_hist = #{row_hist}
+			</if>
+			<if test="null != creator and '' != creator">
+				and t.creator = #{creator}
+			</if>
+			<if test="null != created and '' != created">
+				and t.created = #{created}
+			</if>
+			<if test="null != modifier and '' != modifier">
+				and t.modifier = #{modifier}
+			</if>
+			<if test="null != modified and '' != modified">
+				and t.modified = #{modified}
+			</if>
+			<if test="null != ext1 and '' != ext1">
+				and t.ext1 = #{ext1}
+			</if>
+			<if test="null != ext2 and '' != ext2">
+				and t.ext2 = #{ext2}
+			</if>
+			<if test="null != ext3 and '' != ext3">
+				and t.ext3 = #{ext3}
+			</if>
+			<if test="null != row_version and '' != row_version">
+				and t.row_version = #{row_version}
+			</if>
+			<if test="null != keywords and '' != keywords">
+				and ( t.xjmc like
+				'%${keywords}%'
+				or u.user_alias like '%${keywords}%'
+				or o.org_name like '%${keywords}%'
+				or j.jddgl_mc like '%${keywords}%'
+				)
+			</if>
+		</where>
+		group by t.id
+		<choose>
+			<when test="null != orderStr_ and '' != orderStr_">
+				${orderStr_}
+			</when>
+			<otherwise>
+				order by t.created desc
+			</otherwise>
+		</choose>
+	</select>
+	<delete id="delete" parameterType="HashMap">
+		delete from s_xjgl
+		where id in
+		<foreach collection="id.split(',')" open="(" separator=","
+			close=")" item="item">
+			#{item}
+		</foreach>
+		;
+		delete from s_xjgl_info
+		where xj_id in
+		<foreach collection="id.split(',')" open="(" separator=","
+			close=")" item="item">
+			#{item}
+		</foreach>
+	</delete>
+	<insert id="insert" parameterType="HashMap" useGeneratedKeys="true"
+		keyProperty="id">
+		insert into s_xjgl
+		(id,sys_id,mbid,xjmc,xjmb,fxid,xjlx,kssj,jssj,zxr,xjms,zxzt,pid,pdid,remark,sort_no,row_state,row_default,row_hist,creator,created,modifier,modified,ext1,ext2,ext3,row_version
+		)
+		values
+		(#{id},#{sys_id},#{mbid},#{xjmc},#{xjmb},#{fxid},#{xjlx},#{kssj},#{jssj},#{zxr},#{xjms},#{zxzt},#{pid},#{pdid},#{remark},#{sort_no},#{row_state},#{row_default},#{row_hist},#{creator},#{created},#{modifier},#{modified},#{ext1},#{ext2},#{ext3},#{row_version})
+	</insert>
+	<update id="update" parameterType="HashMap">
+		update s_xjgl
+		<set>
+			<if test="null != mbid">
+				mbid = #{mbid},
+			</if>
+			<if test="null != xjmc">
+				xjmc = #{xjmc},
+			</if>
+			<if test="null != xjmb">
+				xjmb = #{xjmb},
+			</if>
+			<if test="null != fxid">
+				fxid = #{fxid},
+			</if>
+			<if test="null != xjlx">
+				xjlx = #{xjlx},
+			</if>
+			<if test="null != kssj">
+				kssj = #{kssj},
+			</if>
+			<if test="null != jssj">
+				jssj = #{jssj},
+			</if>
+			<if test="null != zxr">
+				zxr = #{zxr},
+			</if>
+			<if test="null != zxzt">
+				zxzt = #{zxzt},
+			</if>
+			<if test="null != xjms">
+				xjms = #{xjms},
+			</if>
+			<if test="null != pid">
+				pid = #{pid},
+			</if>
+			<if test="null != pdid">
+				pdid = #{pdid},
+			</if>
+			<if test="null != remark">
+				remark = #{remark},
+			</if>
+			<if test="null != sort_no">
+				sort_no = #{sort_no},
+			</if>
+			<if test="null != row_state">
+				row_state = #{row_state},
+			</if>
+			<if test="null != row_default">
+				row_default = #{row_default},
+			</if>
+			<if test="null != row_hist">
+				row_hist = #{row_hist},
+			</if>
+			<if test="null != creator">
+				creator = #{creator},
+			</if>
+			<if test="null != created">
+				created = #{created},
+			</if>
+			<if test="null != modifier">
+				modifier = #{modifier},
+			</if>
+			<if test="null != modified">
+				modified = #{modified},
+			</if>
+			<if test="null != ext1">
+				ext1 = #{ext1},
+			</if>
+			<if test="null != ext2">
+				ext2 = #{ext2},
+			</if>
+			<if test="null != ext3">
+				ext3 = #{ext3},
+			</if>
+			<if test="null != row_version">
+				row_version = #{row_version},
+			</if>
+		</set>
+		where id = #{id}
+	</update>
+
+	<select id="countByJdd" resultType="java.lang.Long">
+		select count(1) from s_xjmbgl where fxid=#{jddId};
+	</select>
+</mapper>

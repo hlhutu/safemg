@@ -1,0 +1,115 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="cn.scihi.yjsj.mapper.DangerTemplateTaskOrderMapper">
+	<select id="select" parameterType="HashMap" resultType="Map">
+		select
+		<include refid="BaseMapper.Base_Column_List_Select" />
+		,t.task_id as "task_id"
+		,t.content_id as "content_id"
+		,t.result as "result"
+		,t.ld as "ld"
+		,t.lt as "lt"
+		
+		,t.status as "status"
+		from s_danger_template_task_order t
+		<where>
+			<if test="null != id and '' != id">
+				and t.id = #{id}
+			</if>
+			<if test="null != sys_id and '' != sys_id">
+				and t.sys_id = #{sys_id}
+			</if>
+			<if test="null != task_id and '' != task_id">
+				and t.task_id = #{task_id}
+			</if>
+			<if test="null != taskIds and '' != taskIds">
+				and t.task_id in
+				<foreach collection="taskIds.split(',')" open="(" separator="," close=")" item="item" index="index">
+					#{item}
+				</foreach>
+			</if>
+			<if test="null != content_id and '' != content_id">
+				and t.content_id = #{content_id}
+			</if>
+			<if test="null != row_default and '' != row_default">
+				and t.row_default = #{row_default}
+			</if>
+			<if test="null != row_state and '' != row_state">
+				and t.row_state = #{row_state}
+			</if>
+			<if test="null != row_version and '' != row_version">
+				and t.row_version = #{row_version}
+			</if>
+			<if test="null != keywords and '' != keywords">
+				and (
+				t.task_id like '%${keywords}%' 
+				)
+			</if>
+		</where>
+		<choose>
+			<when test="null != orderStr_ and '' != orderStr_">
+				${orderStr_}
+			</when>
+			<otherwise>
+				order by created
+			</otherwise>
+		</choose>
+	</select>
+	
+	<delete id="delete" parameterType="HashMap">
+		delete from s_danger_template_task_order 
+		where id in 
+		<foreach collection="id.split(',')" open="(" separator="," close=")" item="item" index="index">
+			#{item}
+		</foreach>
+	</delete>
+	
+	<insert id="insert" parameterType="HashMap" useGeneratedKeys="true" keyProperty="id">
+		insert into s_danger_template_task_order (
+		<include refid="BaseMapper.Base_Column_List_Insert" />
+		,task_id
+		,content_id
+		,result
+		,ld
+		,lt
+		<if test="null != status">
+		,status
+		</if>
+		)
+		values
+		(
+		<include refid="BaseMapper.Base_Column_List_Insert_Values" />
+		,#{task_id}
+		,#{content_id}
+		,#{result}
+		,#{ld}
+		,#{lt}
+		<if test="null != status">
+		,#{status}
+		</if>
+		)
+	</insert>
+	
+	<update id="update" parameterType="HashMap">
+		update s_danger_template_task_order
+		<set>
+			<include refid="BaseMapper.Base_Column_List_Update" />
+			<if test="null != status">
+				status = #{status}
+			</if>
+			<if test="null != task_id">
+				,task_id = #{task_id}
+			</if>
+			<if test="null != content_id">
+				,content_id = #{content_id}
+			</if>
+			,ld = #{ld}
+			,lt = #{lt}
+			<if test="null != result">
+				,result = #{result}
+			</if>
+		</set>
+		where 
+		id = #{id}
+	</update>
+</mapper>

@@ -1,0 +1,70 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="cn.scihi.app.AppMapper">
+	<select id="select" parameterType="HashMap" resultType="Map">
+		select 
+		t.id,t.version,t.remark,t.app_url,t.app_type,t.created 
+		from s_app t 
+		<where>
+			<if test="null != id and '' != id">
+				and t.id = #{id} 
+			</if>
+			<if test="null != version and '' != version">
+				and t.version = #{version} 
+			</if>
+			<if test="null != remark and '' != remark">
+				and t.remark = #{remark} 
+			</if>
+			<if test="null != app_url and '' != app_url">
+				and t.app_url = #{app_url} 
+			</if>
+			<if test="null != app_type and '' != app_type">
+				and t.app_type = #{app_type} 
+			</if>
+			<if test="null != keywords and '' != keywords">
+			</if>
+		</where>
+		<choose>
+			<when test="null != orderStr_ and '' != orderStr_">
+				${orderStr_} 
+			</when>
+			<otherwise>
+				order by created desc 
+			</otherwise>
+		</choose>
+	</select>
+	<delete id="delete" parameterType="HashMap">
+		delete from s_app 
+		where id in 
+		<foreach collection="id.split(',')" open="(" separator="," close=")" item="item">
+			#{item} 
+		</foreach>
+	</delete>
+	<insert id="insert" parameterType="HashMap" useGeneratedKeys="true" keyProperty="id">
+		insert into s_app 
+		(id,version,remark,app_url,app_type,created)
+		values
+		(#{id},#{version},#{remark},#{app_url},#{app_type},#{created})
+	</insert>
+	<update id="update" parameterType="HashMap">
+		update s_app 
+		<set>
+			<if test="null != version">
+				version = #{version},
+			</if>
+			<if test="null != remark">
+				remark = #{remark},
+			</if>
+			<if test="null != app_url">
+				app_url = #{app_url},
+			</if>
+			<if test="null != app_type">
+				app_type = #{app_type},
+			</if>
+			<if test="null != created">
+				created = #{created},
+			</if>
+		</set>
+		where id = #{id} 
+	</update>
+</mapper>

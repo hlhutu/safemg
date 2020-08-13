@@ -1,0 +1,160 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="cn.scihi.aqfxdzzh.mapper.ZhdMapper">
+
+	<select id="select" parameterType="HashMap" resultType="MyMap">
+		select
+		<include refid="BaseMapper.Base_Column_List_Select" />
+		,t.zh_jb
+		,t.zhd_fxr
+		,t.zhd_fssj
+		,t.zhd_jssj
+		,t.zhd_ms
+		,t.zhd_parent_id
+		,jdd.jddgl_mc as 'jddmc'
+		,jdd.jddgl_dz as 'jdddz'
+		,jdd.jddgl_jd as 'jddjd'
+		,jdd.jddgl_wd as 'jddwd'
+		,t1.user_alias as 'zhd_fxr_desc'
+		,zhjb.dict_name as 'zh_jb_desc'
+		,t.zhd_result,t.address,t.lon,t.lat
+		from s_zhd t
+		left join sys_user t1 on t.zhd_fxr = t1.user_name
+		left join s_jddgl jdd on t.zhd_parent_id = jdd.id
+		LEFT JOIN sys_dict zhjb on zhjb.id =t.zh_jb AND zhjb.PARENT_ID ='zh_jb'
+
+		<where>
+			<if test="null != id and '' != id">
+				t.id = #{id}
+			</if>
+			<if test="null != sys_id and '' != sys_id">
+				and t.sys_id = #{sys_id}
+			</if>
+			<if test="null != pid and '' != pid">
+				and t.pid = #{pid}
+			</if>
+			<if test="null != pdid and '' != pdid">
+				and t.pdid = #{pdid}
+			</if>
+
+			<if test="null != zhd_fxr and '' != zhd_fxr">
+				and t.zhd_fxr = #{zhd_fxr}
+			</if>
+			<if test="null != zhd_parent_id and '' != zhd_parent_id">
+				and t.zhd_parent_id = #{zhd_parent_id}
+			</if>
+			<if test="null != zh_jb and '' != zh_jb">
+				and t.zh_jb = #{zh_jb}
+			</if>
+			<if test="null != ss and '' != ss">
+				and t.zhd_jssj is null
+			</if>
+			<if test="null != creator and '' != creator">
+				and t.creator = #{creator}
+			</if>
+			<choose>
+				<when test="null != month_long and '' != month_long
+					and null != month and '' != month
+					and null != year and '' != year">
+					and t.zhd_fssj>=date_add(concat(#{year},'-',#{month},'-01'), interval -#{month_long} month)
+					and t.zhd_fssj&lt;date_add(concat(#{year},'-',#{month},'-01'), interval 1 month)
+				</when>
+				<when test="null != year and '' != year">
+					and DATE_FORMAT(t.zhd_fssj,'%Y') = #{year}
+					<if test="null != month and '' != month">
+						and DATE_FORMAT(t.zhd_fssj,'%m') = #{month}
+					</if>
+				</when>
+			</choose>
+			<if test="null != keywords and '' != keywords">
+				and (jdd.jddgl_mc like '%${keywords}%'
+				or t1.user_alias like '%${keywords}%'
+				or zhjb.dict_name like '%${keywords}%'
+				)
+			</if>
+		</where>
+
+		<choose>
+	        <when test="null != orderStr_ and '' != orderStr_">
+	            ${orderStr_}
+	        </when>
+	        <otherwise>
+	             order by t.created desc
+	        </otherwise>
+    	</choose>
+		<!-- order by t.xh+0, t.modified desc -->
+	</select>
+	<delete id="delete" parameterType="HashMap">
+		delete from s_zhd
+		where id in
+		<foreach collection="id.split(',')" open="(" separator="," close=")" item="item" index="index">
+			#{item}
+		</foreach>
+	</delete>
+	<insert id="insert" parameterType="HashMap" useGeneratedKeys="true" keyProperty="id">
+		insert into s_zhd (
+		<include refid="BaseMapper.Base_Column_List_Insert" />
+		,zh_jb
+		,zhd_fxr
+		,zhd_fssj
+		<if test="null != zhd_jssj and '' != zhd_jssj">
+			,zhd_jssj
+		</if>
+		,zhd_ms
+		,zhd_parent_id
+		,zhd_result,address,lon,lat
+		)
+		values
+		(
+		<include refid="BaseMapper.Base_Column_List_Insert_Values" />
+		,#{zh_jb}
+		,#{zhd_fxr}
+		,#{zhd_fssj}
+		<if test="null != zhd_jssj and '' != zhd_jssj">
+		, #{zhd_jssj}
+		</if>
+		,#{zhd_ms}
+		,#{zhd_parent_id}
+		,#{zhd_result},#{address},#{lon},#{lat}
+		)
+	</insert>
+	<update id="update" parameterType="HashMap">
+		update s_zhd
+		<set>
+			<include refid="BaseMapper.Base_Column_List_Update" />
+			<if test="null != zh_jb">
+				zh_jb = #{zh_jb},
+			</if>
+			<if test="null != zhd_fxr">
+				zhd_fxr = #{zhd_fxr},
+			</if>
+			<if test="null != zhd_fssj and '' != zhd_fssj">
+				zhd_fssj = #{zhd_fssj},
+			</if>
+			<if test="null != zhd_jssj and '' != zhd_jssj">
+				zhd_jssj = #{zhd_jssj},
+			</if>
+			<if test="null != zhd_ms">
+				zhd_ms = #{zhd_ms},
+			</if>
+			<if test="null != zhd_parent_id">
+				zhd_parent_id = #{zhd_parent_id},
+			</if>
+		</set>
+		where
+		id = #{id}
+	</update>
+
+	<select id="countByStatus" resultType="java.util.Map">
+		select zhjb.dict_name zh_jb, count(1) total from s_zhd t
+		LEFT JOIN sys_dict zhjb on zhjb.id =t.zh_jb AND zhjb.PARENT_ID ='zh_jb'
+		where 1=1
+		<if test="null != year and '' != year">
+			and DATE_FORMAT(t.zhd_fssj,'%Y') = #{year}
+			<if test="null != month and '' != month">
+				and DATE_FORMAT(t.zhd_fssj,'%m') = #{month}
+			</if>
+		</if>
+		group by zhjb.dict_value
+	</select>
+</mapper>

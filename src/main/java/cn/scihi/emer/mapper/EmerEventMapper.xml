@@ -1,0 +1,127 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="cn.scihi.emer.mapper.EmerEventMapper">
+	<select id="select" parameterType="HashMap" resultType="Map">
+		select 
+		t.id,t.sys_id,t.category,t.event_time,t.address,t.lon,t.lat,t.title,t.description,t.event_result,t.creator,t.created,t.event_level,t.org_id
+		,org.org_name org_name
+		from s_emer_event t
+		left join sys_org org on org.id=t.org_id
+		<where>
+			<if test="null != event_level and '' != event_level">
+				and t.event_level = #{event_level}
+			</if>
+			<if test="null != id and '' != id">
+				and t.id = #{id} 
+			</if>
+			<if test="null != sys_id and '' != sys_id">
+				and t.sys_id = #{sys_id} 
+			</if>
+			<if test="null != category and '' != category">
+				and t.category = #{category} 
+			</if>
+			<if test="null != event_time and '' != event_time">
+				and t.event_time = #{event_time} 
+			</if>
+			<if test="null != address and '' != address">
+				and t.address = #{address} 
+			</if>
+			<if test="null != lon and '' != lon">
+				and t.lon = #{lon} 
+			</if>
+			<if test="null != lat and '' != lat">
+				and t.lat = #{lat} 
+			</if>
+			<if test="null != title and '' != title">
+				and t.title = #{title} 
+			</if>
+			<if test="null != description and '' != description">
+				and t.description = #{description} 
+			</if>
+			<if test="null != event_result and '' != event_result">
+				and t.event_result = #{event_result} 
+			</if>
+			<if test="null != creator and '' != creator">
+				and t.creator = #{creator} 
+			</if>
+			<if test="null != created and '' != created">
+				and t.created = #{created} 
+			</if>
+			<if test="null != keywords and '' != keywords">
+				and (
+				t.title like concat('%',#{keywords},'%')
+				or t.description like concat('%',#{keywords},'%')
+				)
+			</if>
+			<if test="null != begin_date and '' != begin_date">
+				and (
+				t.event_time>#{begin_date}
+				or t.created>#{begin_date}
+				)
+			</if>
+		</where>
+		<choose>
+			<when test="null != orderStr_ and '' != orderStr_">
+				${orderStr_} 
+			</when>
+			<otherwise>
+				order by created desc 
+			</otherwise>
+		</choose>
+	</select>
+	<delete id="delete" parameterType="HashMap">
+		delete from s_emer_event 
+		where id in 
+		<foreach collection="id.split(',')" open="(" separator="," close=")" item="item">
+			#{item} 
+		</foreach>
+	</delete>
+	<insert id="insert" parameterType="HashMap" useGeneratedKeys="true" keyProperty="id">
+		insert into s_emer_event 
+		(id,sys_id,category,event_time,address,lon,lat,title,description,event_result,creator,created,event_level,org_id)
+		values
+		(#{id},#{sys_id},#{category},#{event_time},#{address},#{lon},#{lat},#{title},#{description},#{event_result},#{creator},#{created},#{event_level},#{org_id})
+	</insert>
+	<update id="update" parameterType="HashMap">
+		update s_emer_event 
+		<set>
+			<if test="null != org_id">
+				org_id = #{org_id},
+			</if>
+			<if test="null != event_level">
+				event_level = #{event_level},
+			</if>
+			<if test="null != category">
+				category = #{category},
+			</if>
+			<if test="null != event_time">
+				event_time = #{event_time},
+			</if>
+			<if test="null != address">
+				address = #{address},
+			</if>
+			<if test="null != lon">
+				lon = #{lon},
+			</if>
+			<if test="null != lat">
+				lat = #{lat},
+			</if>
+			<if test="null != title">
+				title = #{title},
+			</if>
+			<if test="null != description">
+				description = #{description},
+			</if>
+			<if test="null != event_result">
+				event_result = #{event_result},
+			</if>
+			<if test="null != creator">
+				creator = #{creator},
+			</if>
+			<if test="null != created">
+				created = #{created},
+			</if>
+		</set>
+		where id = #{id} 
+	</update>
+</mapper>

@@ -1,0 +1,116 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="cn.scihi.xwgl.mapper.XwglMapper">
+	<select id="select" parameterType="HashMap" resultType="Map">
+		select
+		<include refid="BaseMapper.Base_Column_List_Select" />
+		,t.xwgl_title as "xwgl_title"
+		,t.xwgl_author as "xwgl_author"
+		,t.xwgl_publish_time as "xwgl_publish_time"
+		,t.xwgl_content as "xwgl_content"
+		,t.xwgl_minpic as "xwgl_minpic"
+		,t.xwgl_maxpic as "xwgl_maxpic"
+		
+		,t.status as "status"
+		from s_xwgl t
+		<where>
+			<if test="null != id and '' != id">
+				and t.id = #{id}
+			</if>
+			<if test="null != sys_id and '' != sys_id">
+				and t.sys_id = #{sys_id}
+			</if>
+			<if test="null != row_default and '' != row_default">
+				and t.row_default = #{row_default}
+			</if>
+			<if test="null != row_state and '' != row_state">
+				and t.row_state = #{row_state}
+			</if>
+			<if test="null != row_version and '' != row_version">
+				and t.row_version = #{row_version}
+			</if>
+			<if test="null != keywords and '' != keywords">
+				and (
+				t.xwgl_title like '%${keywords}%' 
+				or t.xwgl_author like '%${keywords}%' 
+				or t.xwgl_publish_time like binary  '%${keywords}%' 
+				or t.created like binary '%${keywords}%'  
+				)
+			</if>
+		</where>
+		<choose>
+			<when test="null != orderStr_ and '' != orderStr_">
+				${orderStr_}
+			</when>
+			<otherwise>
+				order by sort_no
+			</otherwise>
+		</choose>
+	</select>
+	
+	<delete id="delete" parameterType="HashMap">
+		delete from s_xwgl 
+		where id in
+		<foreach collection="id.split(',')" open="(" separator="," close=")" item="item" index="index">
+			#{item}
+		</foreach>
+	</delete>
+	
+	<insert id="insert" parameterType="HashMap" useGeneratedKeys="true" keyProperty="id">
+		insert into s_xwgl (
+		<include refid="BaseMapper.Base_Column_List_Insert" />
+		,xwgl_title
+		,xwgl_author
+		<if test="null != xwgl_publish_time and '' != xwgl_publish_time">
+		,xwgl_publish_time
+		</if>
+		,xwgl_content
+		,xwgl_minpic
+		,xwgl_maxpic
+		,status
+		)
+		values
+		(
+		<include refid="BaseMapper.Base_Column_List_Insert_Values" />
+		,#{xwgl_title}
+		,#{xwgl_author}
+		<if test="null != xwgl_publish_time and '' != xwgl_publish_time">
+		,#{xwgl_publish_time}
+		</if>
+		,#{xwgl_content}
+		,#{xwgl_minpic}
+		,#{xwgl_maxpic}
+		,#{status}
+		)
+	</insert>
+	
+	<update id="update" parameterType="HashMap">
+		update s_xwgl
+		<set>
+			<include refid="BaseMapper.Base_Column_List_Update" />
+			<if test="null != xwgl_title">
+				xwgl_title = #{xwgl_title}
+			</if>
+			<if test="null != xwgl_author">
+				,xwgl_author = #{xwgl_author}
+			</if>
+			<if test="null != xwgl_publish_time">
+				,xwgl_publish_time = #{xwgl_publish_time}
+			</if>
+			<if test="null != xwgl_content">
+				,xwgl_content = #{xwgl_content}
+			</if>
+			<if test="null != xwgl_minpic">
+				,xwgl_minpic = #{xwgl_minpic}
+			</if>
+			<if test="null != xwgl_maxpic">
+				,xwgl_maxpic = #{xwgl_maxpic}
+			</if>
+			<if test="null != status">
+				,status = #{status}
+			</if>
+		</set>
+		where 
+		id = #{id}
+	</update>
+</mapper>

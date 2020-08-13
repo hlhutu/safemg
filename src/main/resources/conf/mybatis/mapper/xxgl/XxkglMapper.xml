@@ -1,0 +1,114 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="cn.scihi.xxgl.mapper.XxkglMapper">
+	<select id="countFinished" resultType="java.lang.Long">
+		select count(DISTINCT t1.file_id) from s_xxjlgl t1 where t1.xxjlgl_xxkid = #{xxkId} AND t1.creator = #{username}
+	</select>
+
+	<select id="select" parameterType="HashMap" resultType="Map">
+		select
+		<include refid="BaseMapper.Base_Column_List_Select" />
+		,t.xxkgl_title as "xxkgl_title"
+		,t.xxkgl_sources as "xxkgl_sources"
+		,t.xxkgl_notes as "xxkgl_notes"
+		,t.status as "status"
+		,count(t2.id) as "total"
+		from s_xxkgl t
+		left join sys_file t2 on t2.fk_id=t.id
+		<where>
+			<if test="null != id and '' != id">
+				and t.id = #{id}
+			</if>
+			<if test="null != ids and '' != ids">
+				and t.id in
+				<foreach collection="ids.split(',')" item="idItem" open="(" close=")" separator=",">
+					#{idItem}
+				</foreach>
+			</if>
+			<if test="null != sys_id and '' != sys_id">
+				and t.sys_id = #{sys_id}
+			</if>
+			<if test="null != row_default and '' != row_default">
+				and t.row_default = #{row_default}
+			</if>
+			<if test="null != row_state and '' != row_state">
+				and t.row_state = #{row_state}
+			</if>
+			<if test="null != row_version and '' != row_version">
+				and t.row_version = #{row_version}
+			</if>
+			<if test="null != username and '' != username">
+				and t.id in (
+					select xxk_id from s_xxrwgl where user_name=#{username}
+				)
+			</if>
+			<if test="null != keywords and '' != keywords">
+				and (
+				t.xxkgl_title like '%${keywords}%' 
+				or t.xxkgl_sources like '%${keywords}%' 
+				or t.xxkgl_notes like '%${keywords}%' 
+				)
+			</if>
+		</where>
+		group by t.id
+		<choose>
+			<when test="null != orderStr_ and '' != orderStr_">
+				${orderStr_}
+			</when>
+			<otherwise>
+				order by sort_no
+			</otherwise>
+		</choose>
+	</select>
+	
+	<delete id="delete" parameterType="HashMap">
+		delete from s_xxkgl 
+		where id in
+		<foreach collection="id.split(',')" open="(" separator="," close=")" item="item" index="index">
+			#{item}
+		</foreach>
+	</delete>
+	
+	<insert id="insert" parameterType="HashMap" useGeneratedKeys="true" keyProperty="id">
+		insert into s_xxkgl (
+		<include refid="BaseMapper.Base_Column_List_Insert" />
+		,xxkgl_title
+		,xxkgl_sources
+		,xxkgl_notes
+		<if test="null != status">
+		,status
+		</if>
+		)
+		values
+		(
+		<include refid="BaseMapper.Base_Column_List_Insert_Values" />
+		,#{xxkgl_title}
+		,#{xxkgl_sources}
+		,#{xxkgl_notes}
+		<if test="null != status">
+		,#{status}
+		</if>
+		)
+	</insert>
+	
+	<update id="update" parameterType="HashMap">
+		update s_xxkgl
+		<set>
+			<include refid="BaseMapper.Base_Column_List_Update" />
+			<if test="null != xxkgl_title">
+				xxkgl_title = #{xxkgl_title}
+			</if>
+			<if test="null != xxkgl_sources">
+				,xxkgl_sources = #{xxkgl_sources}
+			</if>
+			<if test="null != xxkgl_notes">
+				,xxkgl_notes = #{xxkgl_notes}
+			</if>
+			<if test="null != status">
+				,status = #{status}
+			</if>
+		</set>
+		where 
+		id = #{id}
+	</update>
+</mapper>

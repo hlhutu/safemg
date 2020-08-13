@@ -1,0 +1,148 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="cn.scihi.mbgl.mapper.CycleMapper">
+    <select id="select" parameterType="HashMap" resultType="Map">
+        select
+        t.id,t.username,t.task_def_id,t.cycle,t.cycle_count,t.repeat_,t.last_date,t.last_version,t.model_id
+        from s_cycle t
+        <where>
+            <if test="null != id and '' != id">
+                and t.id = #{id}
+            </if>
+            <if test="null != username and '' != username">
+                and t.username = #{username}
+            </if>
+            <if test="null != task_def_id and '' != task_def_id">
+                and t.task_def_id = #{task_def_id}
+            </if>
+            <if test="null != cycle and '' != cycle">
+                and t.cycle = #{cycle}
+            </if>
+            <if test="null != cycle_count and '' != cycle_count">
+                and t.cycle_count = #{cycle_count}
+            </if>
+            <if test="null != repeat_ and '' != repeat_">
+                and t.repeat_ = #{repeat_}
+            </if>
+            <if test="null != last_date and '' != last_date">
+                and t.last_date = #{last_date}
+            </if>
+            <if test="null != last_version and '' != last_version">
+                and t.last_version = #{last_version}
+            </if>
+        </where>
+        <choose>
+            <when test="null != orderStr_ and '' != orderStr_">
+                ${orderStr_}
+            </when>
+            <otherwise>
+                order by id
+            </otherwise>
+        </choose>
+    </select>
+
+    <select id="selectForBean" parameterType="HashMap" resultType="cn.scihi.mbgl.bean.Cycle">
+        select
+        t.id,t.username,t.task_def_id,t.cycle,t.cycle_count,t.repeat_,t.last_date,t.last_version,t.model_id
+        from s_cycle t
+        <where>
+            <if test="null != id and '' != id">
+                and t.id = #{id}
+            </if>
+            <if test="null != username and '' != username">
+                and t.username = #{username}
+            </if>
+            <if test="null != task_def_id and '' != task_def_id">
+                and t.task_def_id = #{task_def_id}
+            </if>
+            <if test="null != cycle and '' != cycle">
+                and t.cycle = #{cycle}
+            </if>
+            <if test="null != cycle_count and '' != cycle_count">
+                and t.cycle_count = #{cycle_count}
+            </if>
+            <if test="null != repeat_ and '' != repeat_">
+                and t.repeat_ = #{repeat_}
+            </if>
+            <if test="null != last_date and '' != last_date">
+                and t.last_date = #{last_date}
+            </if>
+            <if test="null != last_version and '' != last_version">
+                and t.last_version = #{last_version}
+            </if>
+        </where>
+        <choose>
+            <when test="null != orderStr_ and '' != orderStr_">
+                ${orderStr_}
+            </when>
+            <otherwise>
+                order by id
+            </otherwise>
+        </choose>
+    </select>
+
+    <select id="getCycleList" parameterType="HashMap" resultType="cn.scihi.mbgl.bean.Cycle">
+        select
+        t.id,t.username,t.task_def_id,t.cycle,t.cycle_count,t.repeat_,t.last_date,t.last_version,t.model_id
+        from s_cycle t
+        <where>
+            <if test="null != taskDefId and '' != taskDefId">
+                and t.task_def_id = #{taskDefId}
+            </if>
+            <if test="null != usernames">
+                and t.username in
+                <foreach collection="usernames" item="usernameItem" open="(" close=")" separator=",">
+                    #{usernameItem}
+                </foreach>
+            </if>
+        </where>
+    </select>
+
+    <delete id="delete" parameterType="HashMap">
+        delete from s_cycle
+        where
+        <choose>
+            <when test="id!=null">
+                id in
+                <foreach collection="id.split(',')" open="(" separator="," close=")" item="item">
+                    #{item}
+                </foreach>
+            </when>
+            <when test="model_id!=null">
+                model_id=#{model_id}
+            </when>
+        </choose>
+
+    </delete>
+    <insert id="insert" parameterType="HashMap" useGeneratedKeys="true" keyProperty="id">
+        insert into s_cycle (id,username,task_def_id,cycle,cycle_count,repeat_,last_date,last_version,model_id )
+        values (#{id},#{username},#{task_def_id},#{cycle},#{cycle_count},#{repeat_},now(),#{last_version},#{model_id} )
+    </insert>
+    <update id="update" parameterType="HashMap">
+        update s_cycle
+        <set>
+            <if test="null != username">
+                username = #{username},
+            </if>
+            <if test="null != task_def_id">
+                task_def_id = #{task_def_id},
+            </if>
+            <if test="null != cycle">
+                cycle = #{cycle},
+            </if>
+            <if test="null != cycle_count">
+                cycle_count = #{cycle_count},
+            </if>
+            <if test="null != repeat_">
+                repeat_ = #{repeat_},
+            </if>
+            <if test="null != last_date">
+                last_date = #{last_date},
+            </if>
+            <if test="null != last_version">
+                last_version = #{last_version},
+            </if>
+        </set>
+        where id = #{id}
+    </update>
+</mapper>

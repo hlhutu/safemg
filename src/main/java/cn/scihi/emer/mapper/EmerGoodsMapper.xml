@@ -1,0 +1,90 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="cn.scihi.emer.mapper.EmerGoodsMapper">
+	<select id="select" parameterType="HashMap" resultType="Map">
+		select 
+		t.id,t.sys_id,t.goods_no,t.goods_name,t.category,t.rep_id,t.goods_unit,t.goods_count,t.description,t.created
+		,rep.rep_name rep_name
+		from s_emer_goods t
+		left join s_emer_rep rep on rep.id=t.rep_id
+		<where>
+			<if test="null != id and '' != id">
+				and t.id = #{id} 
+			</if>
+			<if test="null != sys_id and '' != sys_id">
+				and t.sys_id = #{sys_id} 
+			</if>
+			<if test="null != goods_no and '' != goods_no">
+				and t.goods_no = #{goods_no} 
+			</if>
+			<if test="null != goods_name and '' != goods_name">
+				and t.goods_name = #{goods_name} 
+			</if>
+			<if test="null != category and '' != category">
+				and t.category = #{category} 
+			</if>
+			<if test="null != rep_id and '' != rep_id">
+				and t.rep_id = #{rep_id} 
+			</if>
+			<if test="null != goods_unit and '' != goods_unit">
+				and t.goods_unit = #{goods_unit} 
+			</if>
+			<if test="null != goods_count and '' != goods_count">
+				and t.goods_count = #{goods_count} 
+			</if>
+			<if test="null != description and '' != description">
+				and t.description = #{description} 
+			</if>
+			<if test="null != keywords and '' != keywords">
+			</if>
+		</where>
+		<choose>
+			<when test="null != orderStr_ and '' != orderStr_">
+				${orderStr_} 
+			</when>
+			<otherwise>
+				order by created desc 
+			</otherwise>
+		</choose>
+	</select>
+	<delete id="delete" parameterType="HashMap">
+		delete from s_emer_goods 
+		where id in 
+		<foreach collection="id.split(',')" open="(" separator="," close=")" item="item">
+			#{item} 
+		</foreach>
+	</delete>
+	<insert id="insert" parameterType="HashMap" useGeneratedKeys="true" keyProperty="id">
+		insert into s_emer_goods 
+		(id,sys_id,goods_no,goods_name,category,rep_id,goods_unit,goods_count,description,created)
+		values
+		(#{id},#{sys_id},#{goods_no},#{goods_name},#{category},#{rep_id},#{goods_unit},#{goods_count},#{description},#{created})
+	</insert>
+	<update id="update" parameterType="HashMap">
+		update s_emer_goods 
+		<set>
+			<if test="null != goods_no">
+				goods_no = #{goods_no},
+			</if>
+			<if test="null != goods_name">
+				goods_name = #{goods_name},
+			</if>
+			<if test="null != category">
+				category = #{category},
+			</if>
+			<if test="null != rep_id">
+				rep_id = #{rep_id},
+			</if>
+			<if test="null != goods_unit">
+				goods_unit = #{goods_unit},
+			</if>
+			<if test="null != goods_count">
+				goods_count = #{goods_count},
+			</if>
+			<if test="null != description">
+				description = #{description},
+			</if>
+		</set>
+		where id = #{id} 
+	</update>
+</mapper>

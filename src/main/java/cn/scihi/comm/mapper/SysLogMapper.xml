@@ -1,0 +1,110 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="cn.scihi.comm.mapper.SysLogMapper">
+	<select id="select" parameterType="HashMap" resultType="Map">
+		select 
+		t.id,t.sys_id,t.module,t.method,t.descr,t.time,t.url,t.ip,t.result,t.creator,t.created,t.remark 
+		from sys_log t 
+		<where>
+			<if test="null != id and '' != id">
+				and t.id = #{id} 
+			</if>
+			<if test="null != sys_id and '' != sys_id">
+				and t.sys_id = #{sys_id} 
+			</if>
+			<if test="null != module and '' != module">
+				and t.module = #{module} 
+			</if>
+			<if test="null != method and '' != method">
+				and t.method = #{method} 
+			</if>
+			<if test="null != descr and '' != descr">
+				and t.descr = #{descr} 
+			</if>
+			<if test="null != time and '' != time">
+				and t.time = #{time} 
+			</if>
+			<if test="null != url and '' != url">
+				and t.url = #{url} 
+			</if>
+			<if test="null != ip and '' != ip">
+				and t.ip = #{ip} 
+			</if>
+			<if test="null != result and '' != result">
+				and t.result = #{result} 
+			</if>
+			<if test="null != creator and '' != creator">
+				and t.creator = #{creator} 
+			</if>
+			<if test="null != created and '' != created">
+				and t.created = #{created} 
+			</if>
+			<if test="null != remark and '' != remark">
+				and t.remark = #{remark} 
+			</if>
+			<if test="null != keywords and '' != keywords">
+			</if>
+		</where>
+		<choose>
+			<when test="null != orderStr_ and '' != orderStr_">
+				${orderStr_} 
+			</when>
+			<otherwise>
+				order by t.created desc 
+			</otherwise>
+		</choose>
+	</select>
+	<delete id="delete" parameterType="HashMap">
+		delete from sys_log 
+		where id in 
+		<foreach collection="id.split(',')" open="(" separator="," close=")" item="item">
+			#{item} 
+		</foreach>
+	</delete>
+	<insert id="insert" parameterType="HashMap" useGeneratedKeys="true" keyProperty="id">
+		insert into sys_log 
+		(id,sys_id,module,method,descr,time,url,ip,result,creator,created,remark)
+		values
+		(#{id},#{sys_id},#{module},#{method},#{descr},#{time},#{url},#{ip},#{result},#{creator},#{created},#{remark})
+	</insert>
+	<update id="update" parameterType="HashMap">
+		update sys_log 
+		<set>
+			<if test="null != module">
+				module = #{module},
+			</if>
+			<if test="null != method">
+				method = #{method},
+			</if>
+			<if test="null != descr">
+				descr = #{descr},
+			</if>
+			<if test="null != time">
+				time = #{time},
+			</if>
+			<if test="null != url">
+				url = #{url},
+			</if>
+			<if test="null != ip">
+				ip = #{ip},
+			</if>
+			<if test="null != result">
+				result = #{result},
+			</if>
+			<if test="null != creator">
+				creator = #{creator},
+			</if>
+			<if test="null != created">
+				created = #{created},
+			</if>
+			<if test="null != remark">
+				remark = #{remark},
+			</if>
+		</set>
+		where id = #{id} 
+	</update>
+
+	<delete id="clean">
+		delete from sys_log where created&lt;date_add(now(), interval -3 day);
+	</delete>
+</mapper>
